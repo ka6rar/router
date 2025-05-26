@@ -23,6 +23,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String _statusMessage = '';
   bool _isLoading = false;
   RouterStrategy? _selectedRouter;
+  String? _selectedHuaweiOption;
 
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
@@ -31,6 +32,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   TextEditingController _wlSsidcontroller =  TextEditingController();
   TextEditingController _wlWpaPskcontroller =  TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
     'HUAWEI NE': HuaweiRouter(),
@@ -38,8 +40,17 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   };
 
   Future<void> runRouterAuth() async {
+
+    if(_formKey.currentState!.validate()) {
+
+
+
     if (_selectedRouter == null) {
       setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
+      return;
+    }
+    if (_selectedHuaweiOption == null) {
+      setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
       return;
     }
 
@@ -50,6 +61,20 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
     try {
       _controller = WebViewController()
+        ..addJavaScriptChannel(
+          'FlutterPostMessage',
+          onMessageReceived: (message) {
+            if (message.message == 'wifiChanged') {
+              setState(() {
+                _showWebView = false;
+                _statusMessage = 'تم تغيير إعدادات الواي فاي بنجاح!';
+                _controller.clearCache();
+                _controller.clearLocalStorage();
+
+              });
+            }
+          },
+        )
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
           NavigationDelegate(
@@ -73,158 +98,193 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
         _isLoading = false;
       });
     }
+    }
   }
   Future<void> _handleRouterFlow() async {
     try {
-      await _selectedRouter!.login(_controller,
-       _usernamecontroller.text  ,
-       _passoredcontroller.text  ,
-
-      );
+      await _selectedRouter!.login(_controller);
       setState(() => _statusMessage = 'تم التسجيل بنجاح');
 
-      await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text );
-      await Future.delayed(Duration(seconds: 10));
-      await _selectedRouter!.wan(_controller ,_selectedHuaweiOption!);
+        await _selectedRouter!.lan(_controller);
+        await Future.delayed(const Duration(seconds:15));
+        await _selectedRouter!.wan(_controller ,_selectedHuaweiOption! , _usernamecontroller.text , _passoredcontroller.text);
+        await Future.delayed(const Duration(seconds:23));
+        await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text ,context );
 
-      // يمكن استدعاء أي وظيفة أخرى حسب النوع
     } catch (e) {
       setState(() => _statusMessage = 'خطأ: ${e.toString()}');
     }
   }
-  String? _selectedHuaweiOption;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('إدارة الراوتر')),
-      body: Column(
-        children: [
-          if (_statusMessage.isNotEmpty)
-            GestureDetector(
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AutoRouterLogin())
-                );
-                _controller.clearCache();
-                _controller.clearLocalStorage();
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              if (_statusMessage.isNotEmpty)
+                GestureDetector(
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AutoRouterLogin())
+                    );
+                    _controller.clearCache();
+                    _controller.clearLocalStorage();
 
-                },
-              child: const Text('نهاء'),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                _statusMessage,
-                style: TextStyle(
-                  color: _statusMessage.contains('خطأ') ? Colors.red : Colors.green,
-                ),
-              ),
-            ),
-          Expanded(
-            child: _showWebView
-                ? WebViewWidget(controller: _controller)
-                : ListView(
-
-              children: [
-                SizedBox(
-                  height: 100,
-                  width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                              hintText: '',
-                              border: OutlineInputBorder()
-                          ),
-                          controller: _wlSsidcontroller,
-                        ),
-                      ),
-                      SizedBox(width: 10), // مسافة بين الحقول
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                              hintText: 'رمز الرواتر',
-                              border: OutlineInputBorder()
-                          ),
-                          controller: _wlWpaPskcontroller,
-
-                        ),
-                      ),
-
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 100,
-                  width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                              hintText: 'Uaername',
-                              border: OutlineInputBorder()
-                          ),
-                          controller: _usernamecontroller,
-                        ),
-                      ),
-                      SizedBox(width: 10), // مسافة بين الحقول
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                              hintText: 'Password',
-                              border: OutlineInputBorder()
-                          ),
-                          controller: _wlWpaPskcontroller,
-
-                        ),
-                      ),
-
-                    ],
-                  ),
+                    },
+                  child: const Text('نهاء'),
                 ),
 
-
-
-                ..._routerStrategies.entries.map((entry) => RadioListTile(
-                  title: Text(entry.key),
-                  value: entry.value,
-                  groupValue: _selectedRouter,
-                  onChanged: (value) => setState(() {
-                    _selectedRouter = value;
-                  }),
-                )),
-                if (_selectedRouter is HuaweiRouter)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedHuaweiOption,
-                      hint: Text('اختر نوع الباقة'),
-                      items: const [
-                        DropdownMenuItem(value: '1', child: Text('VL 1')),
-                        DropdownMenuItem(value: '2', child: Text('VL 2')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedHuaweiOption = value;
-                        });
-                      },
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    _statusMessage,
+                    style: TextStyle(
+                      color: _statusMessage.contains('خطأ') ? Colors.red : Colors.green,
                     ),
                   ),
-
-                ElevatedButton(
-                  onPressed: _isLoading ? null : runRouterAuth,
-                  child: const Text('اتصال'),
                 ),
-                if (_isLoading) const CircularProgressIndicator(),
-              ],
-            ),
+              Expanded(
+                child: _showWebView
+                    ? WebViewWidget(controller: _controller)
+                    : ListView(
+
+                  children: [
+                    SizedBox(
+                      height: 100,
+                      width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'الرجاء إدخال اسم الشبكة';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'أسم الشبكة',
+                                border: OutlineInputBorder(),
+                              ),
+                              controller: _wlSsidcontroller,
+                            ),
+                          ),
+                          const SizedBox(width: 10), // مسافة بين الحقول
+                          Expanded(
+                            child: TextFormField(
+                              controller: _wlWpaPskcontroller,
+                              decoration: const InputDecoration(
+                                hintText: 'رمز الراوتر',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'الرجاء إدخال رمز الراوتر';
+                                }
+                                if (value.length < 8) {
+                                  return 'يجب أن يحتوي الرمز على 8 أحرف على الأقل';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 100,
+                      width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _usernamecontroller,
+                              decoration: const InputDecoration(
+                                hintText: 'Username', // ← تم تصحيح الكلمة من "Uaername" إلى "Username"
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.text,
+                              textInputAction: TextInputAction.next,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'الرجاء إدخال اسم المستخدم';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10), // مسافة بين الحقول
+                          Expanded(
+                            child: TextFormField(
+                              controller: _passoredcontroller, // ← تأكد من صحة الاسم
+                              decoration: const InputDecoration(
+                                hintText: 'Password',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'الرجاء إدخال كلمة المرور';
+                                }
+                                return null;
+                              },
+                            ),
+
+                          ),
+
+                        ],
+                      ),
+                    ),
+
+
+
+                    ..._routerStrategies.entries.map((entry) => RadioListTile(
+                      title: Text(entry.key),
+                      value: entry.value,
+                      groupValue: _selectedRouter,
+                      onChanged: (value) => setState(() {
+                        _selectedRouter = value;
+                      }),
+                    )),
+                    if (_selectedRouter is HuaweiRouter)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder()
+                          ),
+                          value: _selectedHuaweiOption,
+                          hint: const Text('VLAN ID'),
+                          items: const [
+                            DropdownMenuItem(value: '1', child: Text('1')),
+                            DropdownMenuItem(value: '2', child: Text('2')),
+                            DropdownMenuItem(value: '0', child: Text('بدون')),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedHuaweiOption = value;
+                            });
+                          },
+                        ),
+                      ),
+
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : runRouterAuth,
+                      child: const Text('اتصال'),
+                    ),
+                    if (_isLoading) const CircularProgressIndicator(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

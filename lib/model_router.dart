@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:router/main.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'abstractt.dart';
@@ -8,7 +10,7 @@ class HuaweiRouter implements RouterStrategy {
   String get loginUrl => 'http://192.168.100.1/';
   @override
 
-  Future<void> login(WebViewController controller , username , password) async {
+  Future<void> login(WebViewController controller ) async {
     await controller.runJavaScript('''
       document.getElementById("txt_Username").value = "telecomadmin";
       document.getElementById("txt_Password").value = "admintelecom";
@@ -17,9 +19,7 @@ class HuaweiRouter implements RouterStrategy {
   }
 
 
-  Future<void> wan(WebViewController controller, String selectedHuaweiOption) async {
-    print(selectedHuaweiOption);
-
+  Future<void> wan(WebViewController controller, String selectedHuaweiOption     , String username , String password) async {
     await controller.runJavaScript('''
     (async () => {
       const selectedHuaweiOption = "${selectedHuaweiOption}"; 
@@ -68,20 +68,110 @@ class HuaweiRouter implements RouterStrategy {
 
           await sleep(3000);
 
-          if (selectedHuaweiOption === "1") {
-            console.log("selectedHuaweiOption is 1");
+          if (selectedHuaweiOption === "0") {
+              const VlanSwitch = await waitForElementInIframe(iframeDoc, "VlanSwitch");
+              VlanSwitch.click(); 
+          } else if (selectedHuaweiOption === "1") 
+          {
+            const VlanId = await waitForElementInIframe(iframe.contentDocument, "VlanId");
+            VlanId.value = "1";
+          } else if (selectedHuaweiOption === "2") 
+          {
+            const VlanId = await waitForElementInIframe(iframe.contentDocument, "VlanId");
+            VlanId.value = "2";
           }
-
+          
+          await sleep(3000);
           const UserName = await waitForElementInIframe(iframe.contentDocument, "UserName");
           UserName.value = "";
-          UserName.value = "UserName";
+          UserName.value = "$username";
 
           await sleep(1000);
 
-          const Password = await waitForElementInIframe(iframe.contentDocument, "Password");
-          Password.value = "";
-          Password.value = "UserName";
+          const password = await waitForElementInIframe(iframe.contentDocument, "Password");
+          password.value = "";
+          password.value = "$password";
+          
+         await sleep(1000);
+         
+         
+        const ButtonApply = await waitForElementInIframe(iframe.contentDocument, "ButtonApply");
+        ButtonApply.click();
+        
+        await sleep(4000);
+        
+        
+        } catch (err) {
+          console.error(err);
+        }
 
+      } else {
+        console.error("لم يتم العثور على iframe أو لا يمكن الوصول إلى محتواه.");
+      }
+    })();
+  ''');
+  }
+
+
+  Future<void> lan(WebViewController controller) async {
+    await controller.runJavaScript('''
+    (async () => {
+
+      const name_lanconfig = document.getElementById("name_lanconfig");
+      if (name_lanconfig) {
+        name_lanconfig.click();
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const iframe = document.querySelector("iframe");
+
+      if (iframe && iframe.contentWindow && iframe.contentDocument) {
+
+        function waitForElementInIframe(doc, id, timeout = 5000) {
+          return new Promise((resolve, reject) => {
+            const start = Date.now();
+            const timer = setInterval(() => {
+              const el = doc.getElementById(id);
+              if (el) {
+                clearInterval(timer);
+                resolve(el);
+              } else if (Date.now() - start > timeout) {
+                clearInterval(timer);
+                reject("Timeout waiting for element in iframe: " + id);
+              }
+            }, 100);
+          });
+        }
+
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        try {
+          const iframeDoc = iframe.contentDocument;
+
+          await sleep(3000);
+
+          const cb_Lan1 = await waitForElementInIframe(iframeDoc, "cb_Lan1");
+          cb_Lan1.click(); 
+          
+          const cb_Lan2 = await waitForElementInIframe(iframeDoc, "cb_Lan2");
+          cb_Lan2.click(); 
+          
+          const cb_Lan3 = await waitForElementInIframe(iframeDoc, "cb_Lan3");
+          cb_Lan3.click(); 
+          
+          const cb_Lan4 = await waitForElementInIframe(iframeDoc, "cb_Lan4");
+          cb_Lan4.click(); 
+          
+          await sleep(1000);
+         
+          const ButtonApply = await waitForElementInIframe(iframe.contentDocument, "Apply");
+          ButtonApply.click();
+        
+        await sleep(4000);
+        
+        
         } catch (err) {
           console.error(err);
         }
@@ -94,7 +184,7 @@ class HuaweiRouter implements RouterStrategy {
   }
 
   @override
-  Future<void> changeWifiSettings(WebViewController controller , String wlSsid , String wlWpaPsk) async {
+  Future<void> changeWifiSettings(WebViewController controller , String wlSsid , String wlWpaPsk ,context) async {
     await controller.runJavaScript('''
    (async () => {
     // اضغط أولاً على الزر الذي يفتح iframe أو يظهره
@@ -141,6 +231,10 @@ class HuaweiRouter implements RouterStrategy {
 
         const button = await waitForElementInIframe(iframe.contentDocument, "btnApplySubmit");
         button.click();
+       
+         await sleep(1000); // ممكن تأخير بسيط قبل الإرسال
+
+         window.FlutterPostMessage.postMessage("wifiChanged");
 
       } catch (err) {
         console.error(err);
@@ -155,8 +249,8 @@ class HuaweiRouter implements RouterStrategy {
   }
 
   @override
-  Future<void> reboot(WebViewController controller) async {
-    // Huawei specific reboot script
+  Future<void> reboot(WebViewController controller ,context) async {
+
   }
 
 
