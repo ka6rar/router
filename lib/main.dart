@@ -45,71 +45,73 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
 
 
-    if (_selectedRouter == null) {
-      setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
-      return;
-    }
-    if (_selectedHuaweiOption == null) {
-      setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _statusMessage = 'جاري الاتصال بالراوتر...';
-    });
-
-    try {
-      _controller = WebViewController()
-        ..addJavaScriptChannel(
-          'FlutterPostMessage',
-          onMessageReceived: (message) {
-            if (message.message == 'wifiChanged') {
-              setState(() {
-                _showWebView = false;
-                _statusMessage = 'تم تغيير إعدادات الواي فاي بنجاح!';
-                _controller.clearCache();
-                _controller.clearLocalStorage();
-
-              });
-            }
-          },
-        )
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (url) => setState(() => _statusMessage = 'جاري التحميل...'),
-            onPageFinished: (url) async => await _handleRouterFlow(),
-            onWebResourceError: (error) => setState(() {
-              _statusMessage = 'خطأ في التحميل: ${error.description}';
-              _isLoading = false;
-            }),
-          ),
-        )
-        ..loadRequest(Uri.parse(_selectedRouter!.loginUrl));
+      if (_selectedRouter == null) {
+        setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
+        return;
+      }
+      if (_selectedHuaweiOption == null) {
+        setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
+        return;
+      }
 
       setState(() {
-        _showWebView = true;
-        _isLoading = false;
+        _isLoading = true;
+        _statusMessage = 'جاري الاتصال بالراوتر...';
       });
-    } catch (e) {
-      setState(() {
-        _statusMessage = 'خطأ في الاتصال: $e';
-        _isLoading = false;
-      });
-    }
+
+      try {
+        _controller = WebViewController()
+          ..addJavaScriptChannel(
+            'FlutterPostMessage',
+            onMessageReceived: (message) {
+              if (message.message == 'wifiChanged') {
+                setState(() {
+                  _showWebView = false;
+                  _statusMessage = 'تم تغيير إعدادات الواي فاي بنجاح!';
+                  _controller.clearCache();
+                  _controller.clearLocalStorage();
+
+                });
+              }
+            },
+          )
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (url) => setState(() => _statusMessage = 'جاري التحميل...'),
+              onPageFinished: (url) async => await _handleRouterFlow(),
+              onWebResourceError: (error) => setState(() {
+                _statusMessage = 'خطأ في التحميل: ${error.description}';
+                _isLoading = false;
+              }),
+            ),
+          )
+          ..loadRequest(Uri.parse(_selectedRouter!.loginUrl));
+
+        setState(() {
+          _showWebView = true;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          _statusMessage = 'خطأ في الاتصال: $e';
+          _isLoading = false;
+        });
+      }
     }
   }
   Future<void> _handleRouterFlow() async {
     try {
       await _selectedRouter!.login(_controller);
       setState(() => _statusMessage = 'تم التسجيل بنجاح');
-
-        await _selectedRouter!.lan(_controller);
-        await Future.delayed(const Duration(seconds:15));
-        await _selectedRouter!.wan(_controller ,_selectedHuaweiOption! , _usernamecontroller.text , _passoredcontroller.text);
-        await Future.delayed(const Duration(seconds:23));
-        await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text ,context );
+      await Future.delayed(const Duration(seconds:3));
+      await _selectedRouter!.startCenter(_controller);
+      await Future.delayed(const Duration(seconds:3));
+      await _selectedRouter!.lan(_controller);
+      await Future.delayed(const Duration(seconds:33));
+      await _selectedRouter!.wan(_controller ,_selectedHuaweiOption! , _usernamecontroller.text , _passoredcontroller.text);
+      await Future.delayed(const Duration(seconds:34));
+      await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
 
     } catch (e) {
       setState(() => _statusMessage = 'خطأ: ${e.toString()}');
@@ -130,25 +132,25 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                 GestureDetector(
                   onTap: () async {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AutoRouterLogin())
+                        context,
+                        MaterialPageRoute(builder: (_) => const AutoRouterLogin())
                     );
                     _controller.clearCache();
                     _controller.clearLocalStorage();
 
-                    },
+                  },
                   child: const Text('نهاء'),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    _statusMessage,
-                    style: TextStyle(
-                      color: _statusMessage.contains('خطأ') ? Colors.red : Colors.green,
-                    ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  _statusMessage,
+                  style: TextStyle(
+                    color: _statusMessage.contains('خطأ') ? Colors.red : Colors.green,
                   ),
                 ),
+              ),
               Expanded(
                 child: _showWebView
                     ? WebViewWidget(controller: _controller)
@@ -257,7 +259,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
                           decoration: InputDecoration(
-                            border: OutlineInputBorder()
+                              border: OutlineInputBorder()
                           ),
                           value: _selectedHuaweiOption,
                           hint: const Text('VLAN ID'),
