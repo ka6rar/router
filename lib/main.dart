@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/model_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -18,6 +22,10 @@ class AutoRouterLogin extends StatefulWidget {
 }
 
 class _AutoRouterLoginState extends State<AutoRouterLogin> {
+
+  String ipAddress = 'جارٍ التحميل...';
+  late  StreamSubscription<ConnectivityResult> _subscription;
+
   late WebViewController _controller;
   bool _showWebView = false;
   String _statusMessage = '';
@@ -28,6 +36,50 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
 
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateIP();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen((event) {
+          print(event);
+          _updateIP();
+        },);
+  }
+
+
+  Future<void> _updateIP() async {
+    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
+
+    final info = NetworkInfo();
+       if (connectivityResult.contains(ConnectivityResult.wifi)) {
+             String? ip;
+             ip = await info.getWifiGatewayIP();
+             ipAddress = ip ?? 'لم يتم العثور على ';
+             setState(() {
+               _statusMessage = ip.toString();
+             });
+
+      }  else {
+          ipAddress = "يدعم فقط الرواتر";
+          setState(() {
+            _statusMessage = ipAddress;
+          });
+       }
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+       ipAddress =  "الواي فاي معطل ";
+       setState(() {
+         _statusMessage = ipAddress;
+       });
+
+    }
+
+  }
+
 
 
   TextEditingController _wlSsidcontroller =  TextEditingController();
@@ -35,7 +87,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
-    'HUAWEI NE': HuaweiRouter(),
+    'HUAWEI': HuaweiRouter(),
     // يمكن إضافة المزيد هنا
   };
 
@@ -118,6 +170,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +181,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              if (_statusMessage.isNotEmpty)
+              if (_statusMessage.isNotEmpty && ipAddress.isEmpty)
                 GestureDetector(
                   onTap: () async {
                     Navigator.push(
@@ -142,15 +195,35 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                   child: const Text('نهاء'),
                 ),
 
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  _statusMessage,
-                  style: TextStyle(
-                    color: _statusMessage.contains('خطأ') ? Colors.red : Colors.green,
-                  ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+                decoration: BoxDecoration(
+                  color: _statusMessage.contains('خطأ') ? Colors.red.shade800 : Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _statusMessage.contains('خطأ') ? Icons.close_rounded : Icons.check_rounded,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _statusMessage,
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+
               Expanded(
                 child: _showWebView
                     ? WebViewWidget(controller: _controller)

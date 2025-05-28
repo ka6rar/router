@@ -174,9 +174,7 @@ class HuaweiRouter implements RouterStrategy {
   }
 
   @override
-  @override
-  Future<void> wan(WebViewController controller, String selectedHuaweiOption,
-      String username, String password) async {
+  Future<void> wan(WebViewController controller, String selectedHuaweiOption, String username, String password) async {
     final script = '''
     (async () => {
       function waitForElement(doc, id, timeout = 10000) {
@@ -304,13 +302,11 @@ class HuaweiRouter implements RouterStrategy {
       }
     })();
   ''';
-
     await _executeScriptWithRetry(controller, script);
   }
 
   @override
-  Future<void> changeWifiSettings(
-      WebViewController controller, String wlSsid, String wlWpaPsk) async {
+  Future<void> changeWifiSettings(WebViewController controller, String wlSsid, String wlWpaPsk) async {
     final script = '''
     (async () => {
       function waitForElement(doc, id, timeout = 15000) {

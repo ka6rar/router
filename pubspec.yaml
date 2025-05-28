@@ -37,6 +37,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   webview_flutter_plus:
   connectivity_plus:
+  network_info_plus:
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
