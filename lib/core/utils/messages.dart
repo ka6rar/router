@@ -3,7 +3,6 @@ final Map<String, String> endingMessagesMap = {
   "portId": "تم تفعيل المنافذ بنجاح !" ,
   "wan" : "تم حفظ معلومات الاتصال !" ,
   "WifiSettings": "تم تغير جميع الاعدادات الكطلوبة !" ,
-
 };
 
 
