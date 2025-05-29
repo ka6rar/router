@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/model_router.dart';
+import 'package:router/style/style.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 Future<void> main() async {
@@ -285,6 +286,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                                 return null;
                               },
                               decoration: const InputDecoration(
+                                hintStyle:   TextStyle(    fontFamily: fontF ,),
                                 hintText: 'أسم الشبكة',
                                 border: OutlineInputBorder(),
                               ),
@@ -296,6 +298,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             child: TextFormField(
                               controller: _wlWpaPskcontroller,
                               decoration: const InputDecoration(
+                                hintStyle:   TextStyle(    fontFamily: fontF ,),
                                 hintText: 'رمز الراوتر',
                                 border: OutlineInputBorder(),
                               ),
@@ -323,6 +326,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             child: TextFormField(
                               controller: _usernamecontroller,
                               decoration: const InputDecoration(
+                                hintStyle:   TextStyle(    fontFamily: fontF ,),
                                 hintText: 'Username', // ← تم تصحيح الكلمة من "Uaername" إلى "Username"
                                 border: OutlineInputBorder(),
                               ),
@@ -342,6 +346,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                               controller: _passoredcontroller, // ← تأكد من صحة الاسم
                               decoration: const InputDecoration(
                                 hintText: 'Password',
+                                hintStyle:   TextStyle(    fontFamily: fontF ,),
                                 border: OutlineInputBorder(),
                               ),
                               validator: (value) {
@@ -359,7 +364,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                     ),
 
                     ..._routerStrategies.entries.map((entry) => RadioListTile(
-                      title: Text(entry.key),
+                      title: Text(entry.key , style: TextStyle(    fontFamily: fontF ,)),
                       value: entry.value,
                       groupValue: _selectedRouter,
                       onChanged: (value) {
@@ -377,11 +382,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                               border: OutlineInputBorder()
                           ),
                           value: selectedVlan,
-                          hint: const Text('VLAN ID'),
+                          hint: const Text('VLAN ID' , style: TextStyle(    fontFamily: fontF ,),),
                           items: vlanlist.map((code) {
                             return DropdownMenuItem(
+
                               value: code['value'],
-                              child: Text(code['name']!),
+                              child: Text(code['name']! , style: TextStyle(    fontFamily: fontF ,),),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -408,9 +414,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             fixedSize: const WidgetStatePropertyAll(Size(160, 50)),
                           ),
                           onPressed: _isLoading ? null : runRouterAuth,
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.router_outlined, color: Colors.green),
                               SizedBox(width: 8),
                               Text(
@@ -419,6 +425,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
+                                  fontFamily: fontF ,
                                 ),
                               ),
                             ],
@@ -461,6 +468,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                 color: Colors.green,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
+                fontFamily: fontF ,
               ),
             ),
           ),
