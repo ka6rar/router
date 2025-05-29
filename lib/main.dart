@@ -263,34 +263,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                   child: const Text('نهاء'),
                 ),
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-                decoration: BoxDecoration(
-                  color: _statusMessage.contains('خطأ') ? Colors.red.shade800 : Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _statusMessage.contains('خطأ') ? Icons.close_rounded : Icons.check_rounded,
-                      color: Colors.green,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _statusMessage,
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+               statusMsg(),
 
               Expanded(
                 child: _showWebView
@@ -400,7 +373,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                               border: OutlineInputBorder()
                           ),
                           value: selectedVlan,
@@ -418,10 +391,41 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           },
                         ),
                       ),
+                    const SizedBox(height: 20,),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(Colors.green.shade50),
+                            overlayColor: WidgetStatePropertyAll(Colors.green.shade100.withOpacity(0.3)),
+                            shape: WidgetStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            fixedSize: const WidgetStatePropertyAll(Size(160, 50)),
+                          ),
+                          onPressed: _isLoading ? null : runRouterAuth,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.router_outlined, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text(
+                                'اتصال',
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : runRouterAuth,
-                      child: const Text('اتصال'),
+                      ],
                     ),
                     if (_isLoading) const CircularProgressIndicator(),
                   ],
@@ -430,6 +434,37 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  statusMsg() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: _statusMessage.contains('خطأ') ? Colors.red.shade800 : Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _statusMessage.contains('خطأ') ? Icons.close_rounded : Icons.check_rounded,
+            color: Colors.green,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _statusMessage,
+              style: const TextStyle(
+                color: Colors.green,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
