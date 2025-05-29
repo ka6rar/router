@@ -1,13 +1,17 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/model_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MaterialApp(
     home: AutoRouterLogin(),
     debugShowCheckedModeBanner: false,
@@ -36,19 +40,83 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
 
-  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  final AppLinks _appLinks = AppLinks();
+  String? selectedVlan;
+
+  List<Map<String, String>> vlanlist = [
+    {
+      "name": "1",
+      "value": "1"
+    },
+    {
+      "name": "2",
+      "value": "2"
+    },
+    {
+      "name": "لا يوجد",
+      "value": "0"
+    }
+  ];
+
+
+  Future<void> _handleInitialUri() async {
+    final uri = await _appLinks.getInitialLink();
+    if (uri != null) {
+      final name_r = uri.queryParameters['name_r'];
+      final password_r = uri.queryParameters['password_r'];
+
+
+      if (name_r != null) _wlSsidcontroller.text = name_r;
+      if (password_r != null) _wlWpaPskcontroller.text = password_r;
+
+      final username = uri.queryParameters['username'];
+      final password = uri.queryParameters['password'];
+
+
+      if (username != null) _usernamecontroller.text = username;
+      if (password != null) _passoredcontroller.text = password;
+
+      final vlan = uri.queryParameters['vlan'];
+      if (vlan != null &&  vlanlist.any((item) => item['value'] == vlan)) {
+        setState(() {
+          selectedVlan = vlan;
+        });
+      }
+
+      final selectedHuaweiOption = uri.queryParameters['typeRouter'];
+
+      if (selectedHuaweiOption != null &&
+          _routerStrategies.containsKey(selectedHuaweiOption)) {
+        setState(() {
+          _selectedRouter = _routerStrategies[selectedHuaweiOption];
+        });
+      }
+
+
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _updateIP();
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen((event) {
-          print(event);
+    _appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        final name = uri.queryParameters['name'];
+        final code = uri.queryParameters['code'];
+
+        if (name != null) _usernamecontroller.text = name;
+        if (code != null) _passoredcontroller.text = code;
+      }
+    });
+
+    _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
           _updateIP();
         },);
+    // Also handle app start via a link
+    _handleInitialUri();
   }
 
 
@@ -317,16 +385,17 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       ),
                     ),
 
-
-
                     ..._routerStrategies.entries.map((entry) => RadioListTile(
                       title: Text(entry.key),
                       value: entry.value,
                       groupValue: _selectedRouter,
-                      onChanged: (value) => setState(() {
-                        _selectedRouter = value;
-                      }),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedRouter = value;
+                        });
+                      },
                     )),
+
                     if (_selectedRouter is HuaweiRouter)
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -334,16 +403,17 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           decoration: InputDecoration(
                               border: OutlineInputBorder()
                           ),
-                          value: _selectedHuaweiOption,
+                          value: selectedVlan,
                           hint: const Text('VLAN ID'),
-                          items: const [
-                            DropdownMenuItem(value: '1', child: Text('1')),
-                            DropdownMenuItem(value: '2', child: Text('2')),
-                            DropdownMenuItem(value: '0', child: Text('بدون')),
-                          ],
+                          items: vlanlist.map((code) {
+                            return DropdownMenuItem(
+                              value: code['value'],
+                              child: Text(code['name']!),
+                            );
+                          }).toList(),
                           onChanged: (value) {
                             setState(() {
-                              _selectedHuaweiOption = value;
+                              selectedVlan = value;
                             });
                           },
                         ),

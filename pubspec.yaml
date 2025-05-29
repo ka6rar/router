@@ -38,7 +38,9 @@ dependencies:
   webview_flutter_plus:
   connectivity_plus:
   network_info_plus:
-
+  app_links: ^6.4.0
+  firebase_dynamic_links: ^6.1.6
+  firebase_core:
 
 dev_dependencies:
   flutter_test:
