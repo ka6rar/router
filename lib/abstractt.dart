@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 abstract class RouterStrategy {
@@ -9,5 +10,4 @@ abstract class RouterStrategy {
   Future<void> changeWifiSettings(WebViewController controller ,String wlSsid ,String wlWpaPsk );
   Future<void> reboot(WebViewController controller);
 
-  String get loginUrl;
 }

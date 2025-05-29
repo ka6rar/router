@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:router/main.dart';
+import 'package:router/presentation/screens/home/format_successful.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'abstractt.dart';
 
 class HuaweiRouter implements RouterStrategy {
   @override
-  String get loginUrl => 'http://192.168.100.1/';
 
   // تحسينات عامة: إضافة تأخيرات أكثر ذكاءً وتحسين معالجة الأخطاء
   Future<void> _executeScriptWithRetry(
@@ -49,15 +50,17 @@ class HuaweiRouter implements RouterStrategy {
       try {
         const usernameInput = await waitForElement("txt_Username");
         usernameInput.value = "telecomadmin";
-        window.FlutterPostMessage.postMessage("username_done");
 
         const passwordInput = await waitForElement("txt_Password");
         passwordInput.value = "admintelecom";
-        window.FlutterPostMessage.postMessage("password_done");
 
         const loginBtn = await waitForElement("loginbutton");
-        loginBtn.click();
-        window.FlutterPostMessage.postMessage("login_done");
+        
+       loginBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("login");
+       });
+       loginBtn.click();
+    
       } catch (err) {
         console.error("Login error:", err);
         throw err;
@@ -134,7 +137,6 @@ class HuaweiRouter implements RouterStrategy {
         const checkbox = await waitForElement(doc, portId);
         if (!checkbox.checked) {
           checkbox.click();
-          window.FlutterPostMessage.postMessage(portId);
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (e) {
@@ -158,10 +160,14 @@ class HuaweiRouter implements RouterStrategy {
       await setupLanPort(iframeDoc, "cb_Lan3");
       await setupLanPort(iframeDoc, "cb_Lan4");
 
-      const applyBtn = await waitForElement(iframeDoc, "Apply");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      applyBtn.click();
+    const applyBtn = await waitForElement(iframeDoc, "Apply");
+    applyBtn.addEventListener('click', () => {
+      window.FlutterPostMessage.postMessage("portId");
+    });
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    applyBtn.click();
+        
+        
       await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (err) {
       console.error("LAN setup failed:", err);
@@ -174,7 +180,7 @@ class HuaweiRouter implements RouterStrategy {
   }
 
   @override
-  Future<void> wan(WebViewController controller, String selectedHuaweiOption, String username, String password) async {
+  Future<void> wan(WebViewController controller, String vlan, String username, String password) async {
     final script = '''
     (async () => {
       function waitForElement(doc, id, timeout = 10000) {
@@ -271,14 +277,14 @@ class HuaweiRouter implements RouterStrategy {
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if ("${selectedHuaweiOption}" === "0") {
+        if ("${vlan}" === "0") {
           const vlanSwitch = await waitForElement(iframeDoc, "VlanSwitch");
           vlanSwitch.click();
           window.FlutterPostMessage.postMessage("VlanSwitch");
         } else {
           const vlanId = await waitForElement(iframeDoc, "VlanId");
-          vlanId.value = "${selectedHuaweiOption}";
-          window.FlutterPostMessage.postMessage("VlanId${selectedHuaweiOption}");
+          vlanId.value = "${vlan}";
+          window.FlutterPostMessage.postMessage("VlanId${vlan}");
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -293,7 +299,11 @@ class HuaweiRouter implements RouterStrategy {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         const applyBtn = await waitForElement(iframeDoc, "ButtonApply");
-        applyBtn.click();
+       applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("wan");
+       });
+       applyBtn.click();
+       
         await new Promise(resolve => setTimeout(resolve, 4000));
 
       } catch (err) {
@@ -347,12 +357,15 @@ class HuaweiRouter implements RouterStrategy {
         passInput.value = "${wlWpaPsk}";
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // تطبيق التغييرات
-        const applyBtn = await waitForElement(iframeDoc, "btnApplySubmit"); 
-        applyBtn.click();
+        
+        const applyBtn = await waitForElement(iframeDoc, "btnApplySubmit");
+       applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("WifiSettings");
+       });
+       applyBtn.click();
+       
         await new Promise(resolve => setTimeout(resolve, 3000));
 
-        window.FlutterPostMessage.postMessage("wifiChanged");
       } catch (err) {
         console.error("WiFi setup failed:", err);
         throw err;
@@ -364,15 +377,19 @@ class HuaweiRouter implements RouterStrategy {
 
   @override
   Future<void> reboot(WebViewController controller) async {
-    // يمكن تنفيذ إعادة التشغيل هنا إذا لزم الأمر
+    await controller.clearLocalStorage();
+    await controller.clearCache();
+
   }
+
+
+
 }
 
 
 
-class TpLinle implements RouterStrategy {
+class TpLinkRouter implements RouterStrategy {
   @override
-  String get loginUrl => 'http://192.168.100.1/';
 
   // تحسينات عامة: إضافة تأخيرات أكثر ذكاءً وتحسين معالجة الأخطاء
   Future<void> _executeScriptWithRetry(
@@ -398,34 +415,20 @@ class TpLinle implements RouterStrategy {
   Future<void> login(WebViewController controller) async {
     const script = '''
     (async function() {
-      function waitForElement(id, timeout = 10000) {
-        return new Promise((resolve, reject) => {
-          const start = Date.now();
-          const timer = setInterval(() => {
-            const el = document.getElementById(id);
-            if (el) {
-              clearInterval(timer);
-              resolve(el);
-            } else if (Date.now() - start > timeout) {
-              clearInterval(timer);
-              reject(new Error("Element not found: " + id));
-            }
-          }, 200);
-        });
-      }
-
       try {
         const usernameInput = await waitForElement("txt_Username");
         usernameInput.value = "telecomadmin";
-        window.FlutterPostMessage.postMessage("username_done");
 
         const passwordInput = await waitForElement("txt_Password");
         passwordInput.value = "admintelecom";
-        window.FlutterPostMessage.postMessage("password_done");
 
         const loginBtn = await waitForElement("loginbutton");
-        loginBtn.click();
-        window.FlutterPostMessage.postMessage("login_done");
+        
+       loginBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("login");
+       });
+       loginBtn.click();
+    
       } catch (err) {
         console.error("Login error:", err);
         throw err;
@@ -502,7 +505,6 @@ class TpLinle implements RouterStrategy {
         const checkbox = await waitForElement(doc, portId);
         if (!checkbox.checked) {
           checkbox.click();
-          window.FlutterPostMessage.postMessage(portId);
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (e) {
@@ -526,10 +528,14 @@ class TpLinle implements RouterStrategy {
       await setupLanPort(iframeDoc, "cb_Lan3");
       await setupLanPort(iframeDoc, "cb_Lan4");
 
-      const applyBtn = await waitForElement(iframeDoc, "Apply");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      applyBtn.click();
+    const applyBtn = await waitForElement(iframeDoc, "Apply");
+    applyBtn.addEventListener('click', () => {
+      window.FlutterPostMessage.postMessage("portId");
+    });
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    applyBtn.click();
+        
+        
       await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (err) {
       console.error("LAN setup failed:", err);
@@ -542,7 +548,7 @@ class TpLinle implements RouterStrategy {
   }
 
   @override
-  Future<void> wan(WebViewController controller, String selectedHuaweiOption, String username, String password) async {
+  Future<void> wan(WebViewController controller, String vlan, String username, String password) async {
     final script = '''
     (async () => {
       function waitForElement(doc, id, timeout = 10000) {
@@ -639,14 +645,14 @@ class TpLinle implements RouterStrategy {
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if ("${selectedHuaweiOption}" === "0") {
+        if ("${vlan}" === "0") {
           const vlanSwitch = await waitForElement(iframeDoc, "VlanSwitch");
           vlanSwitch.click();
           window.FlutterPostMessage.postMessage("VlanSwitch");
         } else {
           const vlanId = await waitForElement(iframeDoc, "VlanId");
-          vlanId.value = "${selectedHuaweiOption}";
-          window.FlutterPostMessage.postMessage("VlanId${selectedHuaweiOption}");
+          vlanId.value = "${vlan}";
+          window.FlutterPostMessage.postMessage("VlanId${vlan}");
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -661,7 +667,11 @@ class TpLinle implements RouterStrategy {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         const applyBtn = await waitForElement(iframeDoc, "ButtonApply");
-        applyBtn.click();
+       applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("wan");
+       });
+       applyBtn.click();
+       
         await new Promise(resolve => setTimeout(resolve, 4000));
 
       } catch (err) {
@@ -715,12 +725,15 @@ class TpLinle implements RouterStrategy {
         passInput.value = "${wlWpaPsk}";
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // تطبيق التغييرات
-        const applyBtn = await waitForElement(iframeDoc, "btnApplySubmit"); 
-        applyBtn.click();
+        
+        const applyBtn = await waitForElement(iframeDoc, "btnApplySubmit");
+       applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("WifiSettings");
+       });
+       applyBtn.click();
+       
         await new Promise(resolve => setTimeout(resolve, 3000));
 
-        window.FlutterPostMessage.postMessage("wifiChanged");
       } catch (err) {
         console.error("WiFi setup failed:", err);
         throw err;
@@ -732,6 +745,11 @@ class TpLinle implements RouterStrategy {
 
   @override
   Future<void> reboot(WebViewController controller) async {
-    // يمكن تنفيذ إعادة التشغيل هنا إذا لزم الأمر
+    await controller.clearLocalStorage();
+    await controller.clearCache();
+
   }
+
+
+
 }

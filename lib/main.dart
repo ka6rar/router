@@ -6,8 +6,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
+import 'package:router/core/utils/handle.dart';
 import 'package:router/model_router.dart';
-import 'package:router/style/style.dart';
+import 'package:router/core/constants/style.dart';
+import 'package:router/presentation/screens/home/format_successful.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 Future<void> main() async {
@@ -36,7 +38,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String _statusMessage = '';
   bool _isLoading = false;
   RouterStrategy? _selectedRouter;
-  String? _selectedHuaweiOption;
 
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
@@ -103,16 +104,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   void initState() {
     super.initState();
     _updateIP();
-    _appLinks.uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        final name = uri.queryParameters['name'];
-        final code = uri.queryParameters['code'];
-
-        if (name != null) _usernamecontroller.text = name;
-        if (code != null) _passoredcontroller.text = code;
-      }
-    });
-
     _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
           _updateIP();
         },);
@@ -157,20 +148,32 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   final Map<String, RouterStrategy> _routerStrategies = {
     'HUAWEI': HuaweiRouter(),
+    'Tp-Link': TpLinkRouter(),
     // يمكن إضافة المزيد هنا
   };
 
+  void _handleGenericSuccess(String statusMessage) {
+    setState(() {
+
+      _statusMessage = statusMessage;
+      _controller.clearCache();
+      _controller.clearLocalStorage();
+
+    });
+  }
   Future<void> runRouterAuth() async {
+
+
 
     if(_formKey.currentState!.validate()) {
 
 
-
-      if (_selectedRouter == null) {
+      if (_selectedRouter == null   ) {
         setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
         return;
       }
-      if (_selectedHuaweiOption == null) {
+      //ذا كانن الرواتر اهواي يفيتح انواع في لان
+      if (selectedVlan == null && _selectedRouter is HuaweiRouter) {
         setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
         return;
       }
@@ -184,22 +187,31 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
         _controller = WebViewController()
           ..addJavaScriptChannel(
             'FlutterPostMessage',
-            onMessageReceived: (message) {
-              if (message.message == 'wifiChanged') {
-                setState(() {
-                  _showWebView = false;
-                  _statusMessage = 'تم تغيير إعدادات الواي فاي بنجاح!';
-                  _controller.clearCache();
-                  _controller.clearLocalStorage();
+               onMessageReceived: (message) {
+                 final String msg = message.message;
+                 for (var entry in endingMessagesMap.entries) {
+                   if (msg.endsWith(entry.key)) {
+                     _handleGenericSuccess(entry.value);
+                     return;
+                   }
+                 }
 
-                });
-              }
+                 if( message.message == "portId") {
+                   Future.delayed(Duration(seconds: 1), () {
+                     Navigator.of(context).pushAndRemoveUntil(
+                       MaterialPageRoute(builder: (context) => AutoRouterLogin()), // استبدل HomePage بالصفحة الرئيسية الحقيقية
+                           (route) => false, // هذا يحذف كل الصفحات السابقة
+                     );
+                   });
+                   _controller.clearLocalStorage();
+                   _controller.clearCache();
+                 }
+
             },
           )
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
           ..setNavigationDelegate(
             NavigationDelegate(
-              onPageStarted: (url) => setState(() => _statusMessage = 'جاري التحميل...'),
               onPageFinished: (url) async => await _handleRouterFlow(),
               onWebResourceError: (error) => setState(() {
                 _statusMessage = 'خطأ في التحميل: ${error.description}';
@@ -207,7 +219,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
               }),
             ),
           )
-          ..loadRequest(Uri.parse(_selectedRouter!.loginUrl));
+          ..loadRequest(Uri.parse("http://${ipAddress}"));
 
         setState(() {
           _showWebView = true;
@@ -223,16 +235,24 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   }
   Future<void> _handleRouterFlow() async {
     try {
+
       await _selectedRouter!.login(_controller);
-      setState(() => _statusMessage = 'تم التسجيل بنجاح');
       await Future.delayed(const Duration(seconds:3));
       await _selectedRouter!.startCenter(_controller);
-      await Future.delayed(const Duration(seconds:3));
+      await Future.delayed(const Duration(seconds:5));
       await _selectedRouter!.lan(_controller);
       await Future.delayed(const Duration(seconds:33));
-      await _selectedRouter!.wan(_controller ,_selectedHuaweiOption! , _usernamecontroller.text , _passoredcontroller.text);
+       await _selectedRouter!.wan(_controller ,selectedVlan! , _usernamecontroller.text , _passoredcontroller.text);
       await Future.delayed(const Duration(seconds:34));
       await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
+      await Future.delayed(const Duration(seconds:2));
+      await _selectedRouter!.reboot(_controller);
+      await Future.delayed(const Duration(seconds:1));
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => AutoRouterLogin()),
+            (route) => false,
+      );
 
     } catch (e) {
       setState(() => _statusMessage = 'خطأ: ${e.toString()}');
@@ -393,6 +413,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           onChanged: (value) {
                             setState(() {
                               selectedVlan = value;
+
                             });
                           },
                         ),
