@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
+import 'package:router/core/utils/deep_link_handler.dart';
 import 'package:router/core/utils/handle.dart';
 import 'package:router/model_router.dart';
 import 'package:router/core/constants/style.dart';
@@ -41,6 +42,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
+  TextEditingController _wlSsidcontroller =  TextEditingController();
+  TextEditingController _wlWpaPskcontroller =  TextEditingController();
 
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -63,41 +66,18 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   ];
 
 
-  Future<void> _handleInitialUri() async {
-    final uri = await _appLinks.getInitialLink();
-    if (uri != null) {
-      final name_r = uri.queryParameters['name_r'];
-      final password_r = uri.queryParameters['password_r'];
-
-
-      if (name_r != null) _wlSsidcontroller.text = name_r;
-      if (password_r != null) _wlWpaPskcontroller.text = password_r;
-
-      final username = uri.queryParameters['username'];
-      final password = uri.queryParameters['password'];
-
-
-      if (username != null) _usernamecontroller.text = username;
-      if (password != null) _passoredcontroller.text = password;
-
-      final vlan = uri.queryParameters['vlan'];
-      if (vlan != null &&  vlanlist.any((item) => item['value'] == vlan)) {
-        setState(() {
-          selectedVlan = vlan;
-        });
-      }
-
-      final selectedHuaweiOption = uri.queryParameters['typeRouter'];
-
-      if (selectedHuaweiOption != null &&
-          _routerStrategies.containsKey(selectedHuaweiOption)) {
-        setState(() {
-          _selectedRouter = _routerStrategies[selectedHuaweiOption];
-        });
-      }
-
-
-    }
+  Future<void> copyInfoUser() async {
+    await deepLink(
+      appLinks: _appLinks,
+      wlSsidController: _wlSsidcontroller,
+      wlWpaPskController: _wlWpaPskcontroller,
+      usernameController: _usernamecontroller,
+      passwordController: _passoredcontroller,
+      vlanList: vlanlist,
+      routerStrategies: _routerStrategies,
+      onVlanChanged: (vlan) => setState(() => selectedVlan = vlan), // Callback
+      onRouterChanged: (router) => setState(() => _selectedRouter = router), // Callback
+    );
   }
 
   @override
@@ -106,9 +86,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     _updateIP();
     _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
           _updateIP();
-        },);
+     },);
     // Also handle app start via a link
-    _handleInitialUri();
+    copyInfoUser();
   }
 
 
@@ -142,8 +122,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
 
 
-  TextEditingController _wlSsidcontroller =  TextEditingController();
-  TextEditingController _wlWpaPskcontroller =  TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
@@ -151,22 +130,16 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     'Tp-Link': TpLinkRouter(),
     // يمكن إضافة المزيد هنا
   };
-
-  void _handleGenericSuccess(String statusMessage) {
+  void messages(String statusMessage) {
     setState(() {
-
       _statusMessage = statusMessage;
       _controller.clearCache();
       _controller.clearLocalStorage();
-
     });
   }
+
   Future<void> runRouterAuth() async {
-
-
-
     if(_formKey.currentState!.validate()) {
-
 
       if (_selectedRouter == null   ) {
         setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
@@ -177,7 +150,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
         setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
         return;
       }
-
       setState(() {
         _isLoading = true;
         _statusMessage = 'جاري الاتصال بالراوتر...';
@@ -191,7 +163,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                  final String msg = message.message;
                  for (var entry in endingMessagesMap.entries) {
                    if (msg.endsWith(entry.key)) {
-                     _handleGenericSuccess(entry.value);
+                     messages(entry.value);
                      return;
                    }
                  }
@@ -235,7 +207,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   }
   Future<void> _handleRouterFlow() async {
     try {
-
       await _selectedRouter!.login(_controller);
       await Future.delayed(const Duration(seconds:3));
       await _selectedRouter!.startCenter(_controller);
@@ -283,10 +254,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                   },
                   child: const Text('نهاء'),
                 ),
-
                statusMsg(),
-
-              Expanded(
+               Expanded(
                 child: _showWebView
                     ? WebViewWidget(controller: _controller)
                     : ListView(
@@ -306,9 +275,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                                 return null;
                               },
                               decoration: const InputDecoration(
-                                hintStyle:   TextStyle(    fontFamily: fontF ,),
+                                hintStyle:   TextStyle(    fontFamily: fontF , color: Colors.green),
                                 hintText: 'أسم الشبكة',
-                                border: OutlineInputBorder(),
+                                  border: OutlineInputBorder( borderSide: BorderSide(color: Colors.green) ),
+                                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+
                               ),
                               controller: _wlSsidcontroller,
                             ),
@@ -318,9 +290,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             child: TextFormField(
                               controller: _wlWpaPskcontroller,
                               decoration: const InputDecoration(
-                                hintStyle:   TextStyle(    fontFamily: fontF ,),
+                                hintStyle:  TextStyle(    fontFamily: fontF , color: Colors.green),
                                 hintText: 'رمز الراوتر',
-                                border: OutlineInputBorder(),
+                                  border: OutlineInputBorder( borderSide: BorderSide(color: Colors.green) ),
+                                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -346,9 +321,11 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             child: TextFormField(
                               controller: _usernamecontroller,
                               decoration: const InputDecoration(
-                                hintStyle:   TextStyle(    fontFamily: fontF ,),
+                                hintStyle:   TextStyle(    fontFamily: fontF , color: Colors.green),
                                 hintText: 'Username', // ← تم تصحيح الكلمة من "Uaername" إلى "Username"
-                                border: OutlineInputBorder(),
+                               border: OutlineInputBorder( borderSide: BorderSide(color: Colors.green) ),
+                               enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
                               ),
                               keyboardType: TextInputType.text,
                               textInputAction: TextInputAction.next,
@@ -364,10 +341,13 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           Expanded(
                             child: TextFormField(
                               controller: _passoredcontroller, // ← تأكد من صحة الاسم
-                              decoration: const InputDecoration(
+                              decoration:  const InputDecoration(
                                 hintText: 'Password',
-                                hintStyle:   TextStyle(    fontFamily: fontF ,),
-                                border: OutlineInputBorder(),
+                                hintStyle:   TextStyle(    fontFamily: fontF , color: Colors.green),
+                                border: OutlineInputBorder( borderSide: BorderSide(color: Colors.green) ),
+                                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -387,6 +367,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       title: Text(entry.key , style: TextStyle(    fontFamily: fontF ,)),
                       value: entry.value,
                       groupValue: _selectedRouter,
+                      activeColor:  Colors.green.shade100 ,
                       onChanged: (value) {
                         setState(() {
                           _selectedRouter = value;
@@ -399,7 +380,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
-                              border: OutlineInputBorder()
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.green)
+                              )
                           ),
                           value: selectedVlan,
                           hint: const Text('VLAN ID' , style: TextStyle(    fontFamily: fontF ,),),
