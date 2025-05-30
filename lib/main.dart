@@ -208,23 +208,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
       if(_selectedRouter is HuaweiRouterNew)
       {
-        // await _selectedRouter.login(_controller);
-        // await Future.delayed(const Duration(seconds:3));
-        // await _selectedRouter.startCenter(_controller);
-        // await Future.delayed(const Duration(seconds:5));
-        // await _selectedRouter.lan(_controller);
-        // await Future.delayed(const Duration(seconds:33));
-        // await _selectedRouter.wan(_controller ,selectedVlan!  , _usernamecontroller.text , _passoredcontroller.text);
-        // await Future.delayed(const Duration(seconds:34));
-        // await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
-        // await Future.delayed(const Duration(seconds:2));
-        // await _selectedRouter.reboot(_controller);
-        // await Future.delayed(const Duration(seconds:1));
-        speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
+
+        await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
             selectedVlan!, 3, 5, 33, 34, 2, 1
         );
       } else  {
-        speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
+     await speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
             selectedVlan!, 3, 5, 15, 15, 2, 1
         );
       }
