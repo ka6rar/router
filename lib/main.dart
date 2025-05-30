@@ -8,10 +8,12 @@ import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/core/utils/deep_link_handler.dart';
 import 'package:router/core/utils/messages.dart';
+import 'package:router/core/utils/speed_step_router.dart';
 import 'package:router/model_router.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/presentation/screens/home/format_successful.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +36,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String ipAddress = 'جارٍ التحميل...';
   late  StreamSubscription<ConnectivityResult> _subscription;
 
-  late WebViewController _controller;
+  late WebViewControllerPlus _controller;
   bool _showWebView = false;
   String _statusMessage = '';
   bool _isLoading = false;
@@ -52,15 +54,15 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   List<Map<String, String>> vlanlist = [
     {
-      "name": "1",
+      "name":  "1",
       "value": "1"
     },
     {
-      "name": "2",
+      "name":  "2",
       "value": "2"
     },
     {
-      "name": "لا يوجد",
+      "name":  "لا يوجد",
       "value": "0"
     }
   ];
@@ -119,15 +121,11 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     }
 
   }
-
-
-
-
   final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
-    'HUAWEI': HuaweiRouter(),
-    'Tp-Link': TpLinkRouter(),
+    'HUAWEI New': HuaweiRouterNew(),
+    'HUAWEI Old': HuaweiRouterOld(),
     // يمكن إضافة المزيد هنا
   };
   void messages(String statusMessage) {
@@ -146,7 +144,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
         return;
       }
       //ذا كانن الرواتر اهواي يفيتح انواع في لان
-      if (selectedVlan == null && _selectedRouter is HuaweiRouter) {
+      if (selectedVlan == null && _selectedRouter is HuaweiRouterNew ||  selectedVlan == null &&  _selectedRouter is HuaweiRouterOld) {
         setState(() => _statusMessage = "  VL1 و VL2 اختار نواع");
         return;
       }
@@ -156,7 +154,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       });
 
       try {
-        _controller = WebViewController()
+        _controller = WebViewControllerPlus()
           ..addJavaScriptChannel(
             'FlutterPostMessage',
                onMessageReceived: (message) {
@@ -169,9 +167,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                  }
 
                  if( message.message == "portId") {
-                   Future.delayed(Duration(seconds: 1), () {
+                   Future.delayed(const Duration(seconds: 1), () {
                      Navigator.of(context).pushAndRemoveUntil(
-                       MaterialPageRoute(builder: (context) => AutoRouterLogin()), // استبدل HomePage بالصفحة الرئيسية الحقيقية
+                       MaterialPageRoute(builder: (context) => const AutoRouterLogin()), // استبدل HomePage بالصفحة الرئيسية الحقيقية
                            (route) => false, // هذا يحذف كل الصفحات السابقة
                      );
                    });
@@ -207,23 +205,30 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   }
   Future<void> _handleRouterFlow() async {
     try {
-      await _selectedRouter!.login(_controller);
-      await Future.delayed(const Duration(seconds:3));
-      await _selectedRouter!.startCenter(_controller);
-      await Future.delayed(const Duration(seconds:5));
-      await _selectedRouter!.lan(_controller);
-      await Future.delayed(const Duration(seconds:33));
-       await _selectedRouter!.wan(_controller ,selectedVlan! , _usernamecontroller.text , _passoredcontroller.text);
-      await Future.delayed(const Duration(seconds:34));
-      await _selectedRouter!.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
-      await Future.delayed(const Duration(seconds:2));
-      await _selectedRouter!.reboot(_controller);
-      await Future.delayed(const Duration(seconds:1));
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => AutoRouterLogin()),
-            (route) => false,
-      );
+
+      if(_selectedRouter is HuaweiRouterNew)
+      {
+        // await _selectedRouter.login(_controller);
+        // await Future.delayed(const Duration(seconds:3));
+        // await _selectedRouter.startCenter(_controller);
+        // await Future.delayed(const Duration(seconds:5));
+        // await _selectedRouter.lan(_controller);
+        // await Future.delayed(const Duration(seconds:33));
+        // await _selectedRouter.wan(_controller ,selectedVlan!  , _usernamecontroller.text , _passoredcontroller.text);
+        // await Future.delayed(const Duration(seconds:34));
+        // await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
+        // await Future.delayed(const Duration(seconds:2));
+        // await _selectedRouter.reboot(_controller);
+        // await Future.delayed(const Duration(seconds:1));
+        speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
+            selectedVlan!, 3, 5, 33, 34, 2, 1
+        );
+      } else  {
+        speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
+            selectedVlan!, 3, 5, 15, 15, 2, 1
+        );
+      }
+
 
     } catch (e) {
       setState(() => _statusMessage = 'خطأ: ${e.toString()}');
@@ -364,7 +369,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                     ),
 
                     ..._routerStrategies.entries.map((entry) => RadioListTile(
-                      title: Text(entry.key , style: TextStyle(    fontFamily: fontF ,)),
+                      title: Text(entry.key , style: const TextStyle(    fontFamily: fontF ,)),
                       value: entry.value,
                       groupValue: _selectedRouter,
                       activeColor:  Colors.green.shade100 ,
@@ -375,7 +380,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       },
                     )),
 
-                    if (_selectedRouter is HuaweiRouter)
+                    if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
@@ -390,7 +395,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                             return DropdownMenuItem(
 
                               value: code['value'],
-                              child: Text(code['name']! , style: TextStyle(    fontFamily: fontF ,),),
+                              child: Text(code['name']! , style: const TextStyle(    fontFamily: fontF ,),),
                             );
                           }).toList(),
                           onChanged: (value) {
