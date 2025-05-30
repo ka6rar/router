@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:router/main.dart';
-import 'package:router/presentation/screens/home/format_successful.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'abstractt.dart';
 
@@ -682,3 +679,302 @@ class HuaweiRouterOld implements RouterStrategy {
     await controller.clearCache();
   }
 }
+
+
+
+class TplINKRouter implements RouterStrategy {
+  @override
+
+  // تحسينات عامة: إضافة تأخيرات أكثر ذكاءً وتحسين معالجة الأخطاء
+  Future<void> _executeScriptWithRetry(
+      WebViewController controller,
+      String script, {
+        int maxRetries = 3,
+        int delayMs = 1000,
+      }) async {
+    int retryCount = 0;
+    while (retryCount < maxRetries) {
+      try {
+        await controller.runJavaScript(script);
+        return;
+      } catch (e) {
+        retryCount++;
+        if (retryCount >= maxRetries) rethrow;
+        await Future.delayed(Duration(milliseconds: delayMs));
+      }
+    }
+  }
+
+  @override
+  Future<void> login(WebViewController controller) async {
+    const script = '''
+    (async function() {
+      function waitForElement(id, timeout = 10000) {
+        return new Promise((resolve, reject) => {
+          const start = Date.now();
+          const timer = setInterval(() => {
+            const el = document.getElementById(id);
+            if (el) {
+              clearInterval(timer);
+              resolve(el);
+            } else if (Date.now() - start > timeout) {
+              clearInterval(timer);
+              reject(new Error("Element not found: " + id));
+            }
+          }, 200);
+        });
+      }
+
+      try {
+        const usernameInput = await waitForElement("txt_Username");
+        usernameInput.value = "telecomadmin";
+
+        const passwordInput = await waitForElement("txt_Password");
+        passwordInput.value = "admintelecom";
+
+        const loginBtn = await waitForElement("button");
+        
+       loginBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("login");
+       });
+       loginBtn.click();
+    
+      } catch (err) {
+        console.error("Login error:", err);
+        throw err;
+      }
+    })();
+    ''';
+    await _executeScriptWithRetry(controller, script);
+  }
+
+  @override
+  Future<void> startCenter(WebViewController controller) async {
+
+  }
+
+  @override
+  Future<void> lan(WebViewController controller) async {
+    const script = '''
+      (async () => {
+        function waitForElement(doc, id, timeout = 10000) {
+          return new Promise((resolve, reject) => {
+            const start = Date.now();
+            const timer = setInterval(() => {
+              const el = doc.getElementById(id);
+              if (el) {
+                clearInterval(timer);
+                resolve(el);
+              } else if (Date.now() - start > timeout) {
+                clearInterval(timer);
+                reject(new Error("Element not found: " + id));
+              }
+            }, 200);
+          });
+        }
+
+        const divs = document.querySelectorAll("div");
+          for (let div of divs) {
+            if (div.textContent.trim() === "LAN") {
+              div.click();
+              break;
+            }
+          }
+      
+        const iframe = document.querySelector("iframe");
+        if (iframe && iframe.contentDocument) {
+         const doc = iframe.contentDocument;
+      
+        const lanLabels = ["LAN1", "LAN2", "LAN3", "LAN4"];
+      
+        for (let label of lanLabels) {
+          const div = Array.from(doc.querySelectorAll("div")).find(d =>
+            d.textContent.includes(label)
+          );
+      
+          if (div) {
+            const checkbox = div.querySelector("input[type='checkbox']");
+            if (checkbox) {
+              checkbox.checked = true; // تفعيل checkbox
+              checkbox.dispatchEvent(new Event("change"));
+              console.log(`✅ تم تفعيل  داخل iframe`);
+            }
+          }
+        }
+      
+        const Apply = await waitForElement(doc, "Apply");
+        if (Apply) {
+          Apply.click();
+          console.log("✅ تم الضغط على زر Apply داخل iframe");
+           if (window.FlutterPostMessage?.postMessage) {
+                window.FlutterPostMessage.postMessage("portId");
+              }
+        } else {
+          console.log("❌ لم يتم العثور على زر Apply داخل iframe");
+        }
+      } else {
+        console.log("❌ لم يتم العثور على iframe أو لا يمكن الوصول إليه");
+      }
+
+     
+     
+     
+
+  })();
+  ''';
+
+    await _executeScriptWithRetry(controller, script);
+  }
+
+  @override
+  Future<void> wan(WebViewController controller, String vlan, String username, String password) async {
+    final script = '''
+  (async () => {
+    function waitForElement(doc, id, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+          const el = doc.getElementById(id);
+          if (el) {
+            clearInterval(timer);
+            resolve(el);
+          } else if (Date.now() - start > timeout) {
+            clearInterval(timer);
+            reject(new Error("Element not found: " + id));
+          }
+        }, 200);
+      });
+    }
+
+    const divs = document.querySelectorAll("div");
+    for (let div of divs) {
+      if (div.textContent.trim() === "WAN") {
+        div.click();
+        break;
+      }
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000)); // مهلة بسيطة لدخول الـ iframe
+
+    const iframe = document.querySelector("iframe");
+    if (iframe && iframe.contentWindow && iframe.contentDocument) {
+      const doc = iframe.contentDocument;
+
+      const Apply = await waitForElement(doc, "Newbutton");
+      Apply.click();
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      const encapMode = await waitForElement(doc, "EncapMode2");
+      if (!encapMode.checked) {
+        encapMode.click();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if ("$vlan" === "0") {
+        const vlanSwitchd = await waitForElement(doc, "VlanSwitch");
+        if (vlanSwitchd.checked) {
+          vlanSwitchd.click();
+          window.FlutterPostMessage.postMessage("VlanSwitch Enabled");
+        } else {
+          window.FlutterPostMessage.postMessage("VlanSwitch Already Enabled");
+        }
+      } else {
+        const vlanIds = await waitForElement(doc, "VlanId");
+        vlanIds.value = "$vlan";
+        window.FlutterPostMessage.postMessage("VlanId set");
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const userName = await waitForElement(doc, "UserName");
+      userName.value = "$username";
+      window.FlutterPostMessage.postMessage("UserName");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const passInput = await waitForElement(doc, "Password");
+      passInput.value = "$password";
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const applyBtn = await waitForElement(doc, "ButtonApply");
+      applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("wan");
+      });
+      applyBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 4000));
+    } else {
+      window.FlutterPostMessage.postMessage("❌ iframe not found or inaccessible");
+    }
+  })();
+  ''';
+
+    await _executeScriptWithRetry(controller, script);
+  }
+
+
+  @override
+  Future<void> changeWifiSettings(WebViewController controller, String wlSsid, String wlWpaPsk) async {
+    final script = '''
+  (async () => {
+    function waitForElement(doc, id, timeout = 15000) {
+      return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+          const el = doc.getElementById(id);
+          if (el) {
+            clearInterval(timer);
+            resolve(el);
+          } else if (Date.now() - start > timeout) {
+            clearInterval(timer);
+            reject(new Error("Element not found: " + id));
+          }
+        }, 300);
+      });
+    }
+
+    const divs = document.querySelectorAll("div");
+    for (let div of divs) {
+      if (div.textContent.trim() === "WLAN") {
+        div.click();
+        break;
+      }
+    }
+
+    const iframe = document.querySelector("iframe");
+    if (iframe && iframe.contentWindow && iframe.contentDocument) {
+      const doc = iframe.contentDocument;
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      // تغيير اسم الشبكة
+      const ssidInput = await waitForElement(doc, "wlSsid");
+      ssidInput.value = "$wlSsid";
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // تغيير كلمة المرور
+      const passInput = await waitForElement(doc, "wlWpaPsk");
+      passInput.value = "$wlWpaPsk";
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const applyBtn = await waitForElement(doc, "btnApplySubmit");
+      applyBtn.addEventListener('click', () => {
+        window.FlutterPostMessage.postMessage("WifiSettings");
+      });
+      applyBtn.click();
+
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  })();
+  ''';
+
+    await _executeScriptWithRetry(controller, script);
+  }
+
+
+  @override
+  Future<void> reboot(WebViewController controller) async {
+    await controller.clearLocalStorage();
+    await controller.clearCache();
+  }
+}
+

@@ -107,13 +107,13 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
              });
 
       }  else {
-          ipAddress = "يدعم فقط الرواتر";
+          ipAddress = "يدعم فقط واي فاي";
           setState(() {
             _statusMessage = ipAddress;
           });
        }
     if (connectivityResult.contains(ConnectivityResult.none)) {
-       ipAddress =  "الواي فاي معطل ";
+       ipAddress =  "لا يوجد اتصال في شبكة";
        setState(() {
          _statusMessage = ipAddress;
        });
@@ -124,8 +124,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
-    'HUAWEI New': HuaweiRouterNew(),
-    'HUAWEI Old': HuaweiRouterOld(),
+    'HUAWEI_New': HuaweiRouterNew(),
+    'HUAWEI_Old': HuaweiRouterOld(),
+    'Tp-lINK': TplINKRouter(),
     // يمكن إضافة المزيد هنا
   };
   void messages(String statusMessage) {
@@ -208,20 +209,51 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
       if(_selectedRouter is HuaweiRouterNew)
       {
+        await  speedStepRouter(
+            _selectedRouter!,
+            _usernamecontroller,
+            _passoredcontroller,
+            _wlSsidcontroller,
+            _wlWpaPskcontroller,
+            _controller,
+            selectedVlan!,
+            3, 5, 33, 34, 2, 1
 
-        await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
-            selectedVlan!, 3, 5, 33, 34, 2, 1
         );
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+                (route) => false,
+          );
+        }
+
       } else  {
-     await speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
-            selectedVlan!, 3, 5, 15, 15, 2, 1
+       await speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
+            selectedVlan!, 3, 5, 15, 20, 2, 1
         );
+       if (mounted) {
+         Navigator.of(context).pushAndRemoveUntil(
+           MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+               (route) => false,
+         );
+       }
+
       }
 
 
     } catch (e) {
       setState(() => _statusMessage = 'خطأ: ${e.toString()}');
     }
+  }
+
+  @override
+  void dispose() {
+    _usernamecontroller.dispose();
+    _passoredcontroller.dispose();
+    _wlSsidcontroller.dispose();
+    _wlWpaPskcontroller.dispose();
+    _connectivitySubscription.cancel();
+    super.dispose();
   }
 
 
@@ -306,7 +338,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                      SizedBox(
                       height: 100,
                       width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
                       child: Row(
@@ -357,16 +389,19 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       ),
                     ),
 
-                    ..._routerStrategies.entries.map((entry) => RadioListTile(
-                      title: Text(entry.key , style: const TextStyle(    fontFamily: fontF ,)),
-                      value: entry.value,
-                      groupValue: _selectedRouter,
-                      activeColor:  Colors.green.shade100 ,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedRouter = value;
-                        });
-                      },
+                    ..._routerStrategies.entries.map((entry) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: RadioListTile(
+                        title: Text(entry.key , style: const TextStyle(fontFamily:fontF)),
+                        value: entry.value,
+                        groupValue: _selectedRouter,
+                        activeColor:  Colors.green.shade100 ,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedRouter = value;
+                          });
+                        },
+                      ),
                     )),
 
                     if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)
