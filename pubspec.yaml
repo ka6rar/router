@@ -41,6 +41,11 @@ dependencies:
   app_links: ^6.4.0
   firebase_dynamic_links: ^6.1.6
   firebase_core:
+  sqflite:
+  path_provider:
+  bottom_nav_layout:
+  icons_plus:
+
 
 dev_dependencies:
   flutter_test:

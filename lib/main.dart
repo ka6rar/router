@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:app_links/app_links.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,17 +8,19 @@ import 'package:router/abstractt.dart';
 import 'package:router/core/utils/deep_link_handler.dart';
 import 'package:router/core/utils/messages.dart';
 import 'package:router/core/utils/speed_step_router.dart';
+import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/model_router.dart';
 import 'package:router/core/constants/style.dart';
-import 'package:router/presentation/screens/home/format_successful.dart';
+import 'package:router/presentation/screens/home/home_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DBHerper.database;
   await Firebase.initializeApp();
   runApp(const MaterialApp(
-    home: AutoRouterLogin(),
+    home: HomePage(),
     debugShowCheckedModeBanner: false,
   ));
 }
@@ -41,11 +42,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String _statusMessage = '';
   bool _isLoading = false;
   RouterStrategy? _selectedRouter;
-
+  bool nNTAuthentication = false;
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
   TextEditingController _wlSsidcontroller =  TextEditingController();
   TextEditingController _wlWpaPskcontroller =  TextEditingController();
+  TextEditingController _onNTAuthenticationText =  TextEditingController();
 
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -207,34 +209,28 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
       if(_selectedRouter is HuaweiRouterNew)
       {
-        await  speedStepRouter(
-            _selectedRouter!,
-            _usernamecontroller,
-            _passoredcontroller,
-            _wlSsidcontroller,
-            _wlWpaPskcontroller,
-            _controller,
-            selectedVlan!,
-            3, 5, 33, 34, 2, 1
 
-        );
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => AutoRouterLogin()),
-                (route) => false,
-          );
-        }
+        await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
+      _controller, selectedVlan!,
+     _onNTAuthenticationText, 3, 14, 33, 34, 2, 5, 15);
+        // if (mounted) {
+        //   Navigator.of(context).pushAndRemoveUntil(
+        //     MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+        //         (route) => false,
+        //   );
+        // }
 
       } else  {
-       await speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller, _controller,
-            selectedVlan!, 3, 5, 15, 20, 2, 1
+        await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
+            _controller, selectedVlan!,
+            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,15
         );
-       if (mounted) {
-         Navigator.of(context).pushAndRemoveUntil(
-           MaterialPageRoute(builder: (_) => AutoRouterLogin()),
-               (route) => false,
-         );
-       }
+       // if (mounted) {
+       //   Navigator.of(context).pushAndRemoveUntil(
+       //     MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+       //         (route) => false,
+       //   );
+       // }
 
       }
 
@@ -402,13 +398,13 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                       ),
                     )),
 
-                    if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)
+                    if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)...[
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.green)
+                                  borderSide: BorderSide(color: Colors.green)
                               )
                           ),
                           value: selectedVlan,
@@ -428,6 +424,34 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           },
                         ),
                       ),
+                      CheckboxListTile(
+                        title: Text("ONT Authentication" , style: TextStyle(fontFamily: fontF),),
+                        value: nNTAuthentication,
+                        onChanged: (value) {
+                          setState(() {
+                            nNTAuthentication = value!;
+                          });
+
+                        },),
+                      if(nNTAuthentication == true)
+                      Padding(
+                        padding: const EdgeInsets.only(right:16, left: 16, top: 5 ),
+                        child: TextFormField(
+                          textDirection: TextDirection.ltr,
+                          controller: _onNTAuthenticationText, // ← تأكد من صحة الاسم
+                          decoration:  const InputDecoration(
+                            hintText: ' ONTرمز  التسلسلي',
+                            hintStyle:   TextStyle(    fontFamily: fontF , color: Colors.green),
+                            border: OutlineInputBorder( borderSide: BorderSide(color: Colors.green) ),
+                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.green)) ,
+                          ),
+                        ),
+                      ),
+
+                    ] ,
+
+
                     const SizedBox(height: 20,),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,

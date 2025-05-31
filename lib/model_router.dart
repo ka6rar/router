@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'abstractt.dart';
 
@@ -175,6 +176,68 @@ class HuaweiRouterNew implements RouterStrategy {
 
     await _executeScriptWithRetry(controller, script);
   }
+
+  Future<void> ontAuth(WebViewController controller, notAuth) async {
+    final script = '''
+    (async () => {
+    
+      function waitForElement(doc, id, timeout = 10000) {
+        return new Promise((resolve, reject) => {
+          const start = Date.now();
+          const timer = setInterval(() => {
+            const el = doc.getElementById(id);
+            if (el) {
+              clearInterval(timer);
+              resolve(el);
+            } else if (Date.now() - start > timeout) {
+              clearInterval(timer);
+              reject(new Error("Element not found: " + id));
+            }
+          }, 200);
+        });
+      }
+
+      // ⬅️ اضغط على عنصر "ONT Authentication"
+      const divs = document.querySelectorAll("div");
+      for (let div of divs) {
+        if (div.textContent.trim() === "ONT Authentication") {
+          div.click();
+          break;
+        }
+      }
+
+      try {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const iframe = document.querySelector("iframe");
+        if (iframe && iframe.contentDocument) {
+          const doc = iframe.contentDocument;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // ⬅️ تأكد من تمرير `doc` لدالة `waitForElement`
+          const SNValue = await waitForElement(doc, "SNValue");
+          SNValue.value = "";
+          SNValue.value = "$notAuth";
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          const btnApply_ex2 = await waitForElement(doc, "btnApply_ex2");
+          btnApply_ex2.click();
+
+          // ⬅️ إرسال رسالة إلى Flutter
+          window.FlutterPostMessage.postMessage("passwordcommon_clicked");
+
+        } else {
+          console.error("❌ iframe غير موجود أو لا يمكن الوصول إليه");
+        }
+      } catch (e) {
+        console.error("❌ حدث خطأ:", e);
+      }
+    })();
+  ''';
+
+    await _executeScriptWithRetry(controller, script);
+  }
+
 
   @override
   Future<void> wan(WebViewController controller, String vlan, String username,
@@ -528,6 +591,58 @@ class HuaweiRouterOld implements RouterStrategy {
     await _executeScriptWithRetry(controller, script);
   }
 
+
+  Future<void> ontAuth(WebViewController controller , ontAuth) async {
+    const script = '''
+  (async () => {
+    function waitForElement(doc, id, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+          const el = doc.getElementById(id);
+          if (el) {
+            clearInterval(timer);
+            resolve(el);
+          } else if (Date.now() - start > timeout) {
+            clearInterval(timer);
+            reject(new Error("Element not found: " + id));
+          }
+        }, 200);
+      });
+    }
+
+
+
+    try {
+      const configBtn = document.getElementById("name_lanconfig");
+      if (configBtn) {
+        configBtn.click();
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      const iframeDoc = await waitForIframe();
+      await new Promise(resolve => setTimeout(resolve, 5000)); 
+
+
+    const applyBtn = await waitForElement(iframeDoc, "Apply");
+    applyBtn.addEventListener('click', () => {
+      window.FlutterPostMessage.postMessage("portId");
+    });
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    applyBtn.click();
+        
+        
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } catch (err) {
+      console.error("LAN setup failed:", err);
+      throw err;
+    }
+  })();
+  ''';
+
+    await _executeScriptWithRetry(controller, script);
+  }
+
   @override
   Future<void> wan(WebViewController controller, String vlan, String username, String password) async {
     final script = '''
@@ -613,7 +728,6 @@ class HuaweiRouterOld implements RouterStrategy {
 
     await _executeScriptWithRetry(controller, script);
   }
-
 
   @override
   Future<void> changeWifiSettings(WebViewController controller, String wlSsid, String wlWpaPsk) async {
