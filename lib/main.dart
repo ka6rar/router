@@ -126,8 +126,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   final Map<String, RouterStrategy> _routerStrategies = {
     'HUAWEI_New': HuaweiRouterNew(),
     'HUAWEI_Old': HuaweiRouterOld(),
-    'Tp-lINK': TplINKRouter(),
-    // يمكن إضافة المزيد هنا
   };
   void messages(String statusMessage) {
     setState(() {
@@ -267,7 +265,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              if (_statusMessage.isNotEmpty && ipAddress.isEmpty)
+              if (!_statusMessage.startsWith("192.168."))
                 GestureDetector(
                   onTap: () async {
                     Navigator.push(
