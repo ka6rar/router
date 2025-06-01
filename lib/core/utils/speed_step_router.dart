@@ -40,8 +40,8 @@ Future<void> speedStepRouter(
   await _selectedRouter.wan(_controller ,selectedVlan  , _usernamecontroller.text , _passoredcontroller.text);
   await Future.delayed( Duration(seconds:secondsswan));
 
-  await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
-  await Future.delayed( Duration(seconds:secondchangeWifiSettings));
+  // await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
+  // await Future.delayed( Duration(seconds:secondchangeWifiSettings));
 
   await _selectedRouter.reboot(_controller);
   await Future.delayed( Duration(seconds:secondreboot));

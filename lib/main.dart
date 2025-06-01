@@ -229,7 +229,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       } else  {
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
             _controller, selectedVlan!,
-            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,15 ,  onNTAuthentication_true_false
+            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,10 ,  onNTAuthentication_true_false
         );
        if (mounted) {
          Navigator.of(context).pushAndRemoveUntil(
@@ -431,7 +431,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ),
                       ),
                       CheckboxListTile(
-                        checkColor: Colors.green.shade100,
+                        checkColor: Colors.green,
+                        activeColor: Colors.green.shade100,
                         title: Text("ONT Authentication" , style: TextStyle(fontFamily: fontF),),
                         value: onNTAuthentication_true_false,
                         onChanged: (value) {

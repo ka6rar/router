@@ -624,53 +624,87 @@ class HuaweiRouterOld implements RouterStrategy {
   }
 
 
-  Future<void> ontAuth(WebViewController controller , ontAuth) async {
-    const script = '''
-  (async () => {
-    function waitForElement(doc, id, timeout = 10000) {
-      return new Promise((resolve, reject) => {
-        const start = Date.now();
-        const timer = setInterval(() => {
-          const el = doc.getElementById(id);
-          if (el) {
-            clearInterval(timer);
-            resolve(el);
-          } else if (Date.now() - start > timeout) {
-            clearInterval(timer);
-            reject(new Error("Element not found: " + id));
-          }
-        }, 200);
-      });
-    }
-
-
-
-    try {
-      const configBtn = document.getElementById("name_lanconfig");
-      if (configBtn) {
-        configBtn.click();
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      const iframeDoc = await waitForIframe();
-      await new Promise(resolve => setTimeout(resolve, 5000)); 
-
-
-    const applyBtn = await waitForElement(iframeDoc, "Apply");
-    applyBtn.addEventListener('click', () => {
-      window.FlutterPostMessage.postMessage("portId");
+  Future<void> ontAuth(WebViewController controller, String notAuth) async {
+    final script = '''
+(async () => {
+  function waitForElement(doc, id, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const timer = setInterval(() => {
+        const el = doc.getElementById(id);
+        if (el) {
+          clearInterval(timer);
+          resolve(el);
+        } else if (Date.now() - start > timeout) {
+          clearInterval(timer);
+          reject(new Error("Element not found: " + id));
+        }
+      }, 200);
     });
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    applyBtn.click();
-        
-        
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    } catch (err) {
-      console.error("LAN setup failed:", err);
-      throw err;
+  }
+
+  // النقر على System Tools
+  const divs = document.querySelectorAll("div");
+  for (let div of divs) {
+    if (div.textContent.trim() === "System Tools") {
+      div.click();
+      break;
     }
-  })();
-  ''';
+  }
+
+  // النقر على ONT Authentication
+  const divss = document.querySelectorAll("div");
+  for (let div of divss) {
+    if (div.textContent.trim() === "ONT Authentication") {
+      div.click();
+      break;
+    }
+  }
+
+  try {
+    // انتظار قليل لتحميل المحتوى
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const iframes = document.querySelectorAll("iframe");
+    let found = false;
+
+    for (let iframe of iframes) {
+      try {
+        console.log("📄 محاولة الوصول إلى iframe:", iframe.src || "[no src]");
+
+        const doc = iframe.contentDocument;
+        if (!doc) {
+          console.warn("⚠️ لا يمكن الوصول إلى contentDocument لهذا iframe.");
+          continue;
+        }
+
+        // انتظار العناصر داخل iframe
+        const SNValue = await waitForElement(doc, "SNValue", 5000);
+        SNValue.value = "";
+        SNValue.value = "$notAuth";
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const btnApply_ex2 = await waitForElement(doc, "btnApply_ex2", 5000);
+        btnApply_ex2.setAttribute("type", "button");
+        btnApply_ex2.click();
+
+        console.log("✅ تم الضغط على الزر وتعبئة القيمة.");
+        found = true;
+        break;
+      } catch (err) {
+        console.warn("❌ لم يتم العثور على العنصر في هذا iframe:", err.message);
+      }
+    }
+
+    if (!found) {
+      console.error("❌ لم يتم العثور على SNValue في أي iframe");
+    }
+  } catch (e) {
+    console.error("❌ حدث خطأ عام:", e);
+  }
+})();
+''';
 
     await _executeScriptWithRetry(controller, script);
   }
