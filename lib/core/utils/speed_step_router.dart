@@ -19,21 +19,30 @@ Future<void> speedStepRouter(
     int  secondchangeWifiSettings ,
     int  secondreboot ,
     int  secondont ,
-
+    bool hwaweiOntAuthtaction ,
     )
   async {
   await _selectedRouter.login(_controller);
   await Future.delayed( Duration(seconds:secondssLogin));
+
   await _selectedRouter.startCenter(_controller);
   await Future.delayed( Duration(seconds:secondssstartCenter));
+
   await _selectedRouter.lan(_controller);
-  await Future.delayed( Duration(seconds:secondont ));
-  await _selectedRouter.ontAuth(_controller , _ontAuthcationController.text);
-  await Future.delayed( Duration(seconds:secondssLan ));
+  await Future.delayed( Duration(seconds:secondssLan  ));
+
+  if(hwaweiOntAuthtaction  == true  ) {
+    await _selectedRouter.ontAuth(_controller , _ontAuthcationController.text);
+    await Future.delayed( Duration(seconds:secondont ));
+  }
+
+
   await _selectedRouter.wan(_controller ,selectedVlan  , _usernamecontroller.text , _passoredcontroller.text);
   await Future.delayed( Duration(seconds:secondsswan));
+
   await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
   await Future.delayed( Duration(seconds:secondchangeWifiSettings));
+
   await _selectedRouter.reboot(_controller);
   await Future.delayed( Duration(seconds:secondreboot));
 }

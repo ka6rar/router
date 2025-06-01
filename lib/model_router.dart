@@ -177,67 +177,65 @@ class HuaweiRouterNew implements RouterStrategy {
     await _executeScriptWithRetry(controller, script);
   }
 
-  Future<void> ontAuth(WebViewController controller, notAuth) async {
+  Future<void> ontAuth(WebViewController controller, String notAuth) async {
     final script = '''
-    (async () => {
-    
-      function waitForElement(doc, id, timeout = 10000) {
-        return new Promise((resolve, reject) => {
-          const start = Date.now();
-          const timer = setInterval(() => {
-            const el = doc.getElementById(id);
-            if (el) {
-              clearInterval(timer);
-              resolve(el);
-            } else if (Date.now() - start > timeout) {
-              clearInterval(timer);
-              reject(new Error("Element not found: " + id));
-            }
-          }, 200);
-        });
+  (async () => {
+    function waitForElement(doc, id, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+          const el = doc.getElementById(id);
+          if (el) {
+            clearInterval(timer);
+            resolve(el);
+          } else if (Date.now() - start > timeout) {
+            clearInterval(timer);
+            reject(new Error("Element not found: " + id));
+          }
+        }, 200);
+      });
+    }
+
+    // ⬅️ الضغط على عنصر "ONT Authentication"
+    const divs = document.querySelectorAll("div");
+    for (let div of divs) {
+      if (div.textContent.trim() === "ONT Authentication") {
+        div.click();
+        break;
       }
+    }
 
-      // ⬅️ اضغط على عنصر "ONT Authentication"
-      const divs = document.querySelectorAll("div");
-      for (let div of divs) {
-        if (div.textContent.trim() === "ONT Authentication") {
-          div.click();
-          break;
-        }
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      const iframe = document.querySelector("iframe");
+      if (iframe && iframe.contentDocument && iframe.contentWindow) {
+        const doc = iframe.contentDocument;
+  
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // تعبئة SNValue داخل iframe
+        const SNValue = await waitForElement(doc, "SNValue");
+        SNValue.value = "";
+        SNValue.value = "$notAuth";
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // ✅ الضغط على الزر من داخل doc (وليس document الخارجي)
+        const btnApply_ex2 = await waitForElement(doc, "btnApply_ex2");
+        btnApply_ex2.setAttribute("type", "button"); // يمنع submit
+        btnApply_ex2.click();
+
+      } else {
+        console.error("❌ iframe غير موجود أو لا يمكن الوصول إليه");
       }
-
-      try {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const iframe = document.querySelector("iframe");
-        if (iframe && iframe.contentDocument) {
-          const doc = iframe.contentDocument;
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          // ⬅️ تأكد من تمرير `doc` لدالة `waitForElement`
-          const SNValue = await waitForElement(doc, "SNValue");
-          SNValue.value = "";
-          SNValue.value = "$notAuth";
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          const btnApply_ex2 = await waitForElement(doc, "btnApply_ex2");
-          btnApply_ex2.click();
-
-          // ⬅️ إرسال رسالة إلى Flutter
-          window.FlutterPostMessage.postMessage("passwordcommon_clicked");
-
-        } else {
-          console.error("❌ iframe غير موجود أو لا يمكن الوصول إليه");
-        }
-      } catch (e) {
-        console.error("❌ حدث خطأ:", e);
-      }
-    })();
+    } catch (e) {
+      console.error("❌ حدث خطأ:", e);
+    }
+  })();
   ''';
-
     await _executeScriptWithRetry(controller, script);
   }
-
 
   @override
   Future<void> wan(WebViewController controller, String vlan, String username,
@@ -443,6 +441,40 @@ class HuaweiRouterNew implements RouterStrategy {
     await controller.clearCache();
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

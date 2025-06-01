@@ -11,6 +11,9 @@ Future<void> deepLink({
   required Map<String, dynamic> routerStrategies,
   required Function(String) onVlanChanged, // Callback لتحديث VLAN
   required Function(dynamic) onRouterChanged, // Callback لتحديث Router
+  required Function(bool) onRouterOnt, // Callback لتحديث Router
+  required Map<String, bool> routeront,
+  required TextEditingController ontAuthcationController,
 }) async {
   final uri = await appLinks.getInitialLink();
 
@@ -35,10 +38,23 @@ Future<void> deepLink({
       onVlanChanged(uri.queryParameters['vlan']!);
     }
 
-    // تحديث Router (باستخدام callback)
+
     if (uri.queryParameters['typeRouter'] != null &&
         routerStrategies.containsKey(uri.queryParameters['typeRouter'])) {
       onRouterChanged(routerStrategies[uri.queryParameters['typeRouter']!]);
     }
+
+
+    final ontParam = uri.queryParameters['ont'];
+    if (ontParam != null && routeront.containsKey(ontParam)) {
+      onRouterOnt(routeront[ontParam]!);
+      print('ONT: $ontParam');
+    }
+
+
+  if (uri.queryParameters['ont_text'] != null) {
+    ontAuthcationController.text = uri.queryParameters['ont_text']!;
+  }
+
   }
 }

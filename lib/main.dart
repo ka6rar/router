@@ -42,7 +42,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String _statusMessage = '';
   bool _isLoading = false;
   RouterStrategy? _selectedRouter;
-  bool nNTAuthentication = false;
+  bool onNTAuthentication_true_false = false;
   TextEditingController _usernamecontroller =  TextEditingController();
   TextEditingController _passoredcontroller =  TextEditingController();
   TextEditingController _wlSsidcontroller =  TextEditingController();
@@ -69,6 +69,10 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     }
   ];
 
+  final Map<String, bool> routeront = {
+    'true': true,
+    'false': false,
+  };
 
   Future<void> copyInfoUser() async {
     await deepLink(
@@ -81,6 +85,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       routerStrategies: _routerStrategies,
       onVlanChanged: (vlan) => setState(() => selectedVlan = vlan), // Callback
       onRouterChanged: (router) => setState(() => _selectedRouter = router), // Callback
+      onRouterOnt: (ont) => setState(() => onNTAuthentication_true_false = ont), // Callback
+      routeront: routeront ,
+      ontAuthcationController:  _onNTAuthenticationText
     );
   }
 
@@ -209,21 +216,20 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
       if(_selectedRouter is HuaweiRouterNew)
       {
-
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
       _controller, selectedVlan!,
-     _onNTAuthenticationText, 3, 14, 33, 34, 2, 5, 15);
-        // if (mounted) {
-        //   Navigator.of(context).pushAndRemoveUntil(
-        //     MaterialPageRoute(builder: (_) => AutoRouterLogin()),
-        //         (route) => false,
-        //   );
-        // }
+     _onNTAuthenticationText, 3, 5, 33, 34, 10, 5, 20 ,onNTAuthentication_true_false);
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+                (route) => false,
+          );
+        }
 
       } else  {
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
             _controller, selectedVlan!,
-            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,15
+            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,15 ,  onNTAuthentication_true_false
         );
        // if (mounted) {
        //   Navigator.of(context).pushAndRemoveUntil(
@@ -425,15 +431,16 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ),
                       ),
                       CheckboxListTile(
+                        checkColor: Colors.green.shade100,
                         title: Text("ONT Authentication" , style: TextStyle(fontFamily: fontF),),
-                        value: nNTAuthentication,
+                        value: onNTAuthentication_true_false,
                         onChanged: (value) {
                           setState(() {
-                            nNTAuthentication = value!;
+                            onNTAuthentication_true_false = value!;
                           });
 
                         },),
-                      if(nNTAuthentication == true)
+                      if(onNTAuthentication_true_false == true)
                       Padding(
                         padding: const EdgeInsets.only(right:16, left: 16, top: 5 ),
                         child: TextFormField(
