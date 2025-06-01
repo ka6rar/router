@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/core/utils/deep_link_handler.dart';
+import 'package:router/core/utils/loggers.dart';
 import 'package:router/core/utils/messages.dart';
 import 'package:router/core/utils/speed_step_router.dart';
+import 'package:router/core/utils/v_lan_list.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/model_router.dart';
 import 'package:router/core/constants/style.dart';
@@ -54,20 +56,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   final AppLinks _appLinks = AppLinks();
   String? selectedVlan;
 
-  List<Map<String, String>> vlanlist = [
-    {
-      "name":  "1",
-      "value": "1"
-    },
-    {
-      "name":  "2",
-      "value": "2"
-    },
-    {
-      "name":  "لا يوجد",
-      "value": "0"
-    }
-  ];
+  VLanList _lanList = VLanList();
 
   final Map<String, bool> routeront = {
     'true': true,
@@ -81,7 +70,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       wlWpaPskController: _wlWpaPskcontroller,
       usernameController: _usernamecontroller,
       passwordController: _passoredcontroller,
-      vlanList: vlanlist,
+      vlanList: _lanList.vlan,
       routerStrategies: _routerStrategies,
       onVlanChanged: (vlan) => setState(() => selectedVlan = vlan), // Callback
       onRouterChanged: (router) => setState(() => _selectedRouter = router), // Callback
@@ -338,7 +327,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ],
                       ),
                     ),
-                      SizedBox(
+                    SizedBox(
                       height: 100,
                       width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
                       child: Row(
@@ -403,7 +392,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         },
                       ),
                     )),
-
                     if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)...[
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -415,7 +403,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           ),
                           value: selectedVlan,
                           hint: const Text('VLAN ID' , style: TextStyle(    fontFamily: fontF ,),),
-                          items: vlanlist.map((code) {
+                          items: _lanList.vlan.map((code) {
                             return DropdownMenuItem(
 
                               value: code['value'],

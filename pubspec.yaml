@@ -44,7 +44,9 @@ dependencies:
   sqflite:
   path_provider:
   bottom_nav_layout:
+  smart_nav_bar:
   icons_plus:
+  logger: ^2.5.0
 
 
 dev_dependencies:

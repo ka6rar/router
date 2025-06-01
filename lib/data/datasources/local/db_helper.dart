@@ -1,4 +1,5 @@
 import 'package:path_provider/path_provider.dart';
+import 'package:router/core/utils/loggers.dart';
 import 'package:router/data/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io' as io;
@@ -26,17 +27,18 @@ class DBHerper {
   }
 
   static Future<void> _onCreate(Database db, int version) async {
+    info("Done Create DB SqlLite");
     await db.execute('''
       CREATE TABLE user (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        price INTEGER,
-        quanity INTEGER,
-        image TEXT,
-        productId TEXT UNIQUE,
-        pharmacies_id TEXT,
-        medicine_id TEXT,
-        user_id TEXT
+        name_r TEXT,
+        password_r TEXT,
+        username TEXT,
+        password TEXT,
+        ONT_Authaction TEXT,
+        type_router TEXT,
+        number_user TEXT,
+        name_user TEXT
       )
     ''');
 
@@ -53,7 +55,7 @@ class DBHerper {
 
   Future<List<UserModel>> getUserModelList() async  {
     var dbClient = await database ;
-    final List<Map<String , Object?>> queryRseult = await dbClient!.query('UserModel');
+    final List<Map<String , Object?>> queryRseult = await dbClient.query('UserModel');
     return  queryRseult.map((e) => UserModel.fromMap(e)).toList();
   }
 

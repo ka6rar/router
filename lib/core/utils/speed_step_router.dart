@@ -31,6 +31,7 @@ Future<void> speedStepRouter(
   await _selectedRouter.lan(_controller);
   await Future.delayed( Duration(seconds:secondssLan  ));
 
+  // اذا كان الواتر جديد  يريد الستخد اضافه ONT Authaction
   if(hwaweiOntAuthtaction  == true  ) {
     await _selectedRouter.ontAuth(_controller , _ontAuthcationController.text);
     await Future.delayed( Duration(seconds:secondont ));
@@ -40,8 +41,8 @@ Future<void> speedStepRouter(
   await _selectedRouter.wan(_controller ,selectedVlan  , _usernamecontroller.text , _passoredcontroller.text);
   await Future.delayed( Duration(seconds:secondsswan));
 
-  // await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
-  // await Future.delayed( Duration(seconds:secondchangeWifiSettings));
+  await _selectedRouter.changeWifiSettings(_controller ,_wlSsidcontroller.text , _wlWpaPskcontroller.text  );
+  await Future.delayed( Duration(seconds:secondchangeWifiSettings));
 
   await _selectedRouter.reboot(_controller);
   await Future.delayed( Duration(seconds:secondreboot));
