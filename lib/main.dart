@@ -231,12 +231,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
             _controller, selectedVlan!,
             _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,15 ,  onNTAuthentication_true_false
         );
-       // if (mounted) {
-       //   Navigator.of(context).pushAndRemoveUntil(
-       //     MaterialPageRoute(builder: (_) => AutoRouterLogin()),
-       //         (route) => false,
-       //   );
-       // }
+       if (mounted) {
+         Navigator.of(context).pushAndRemoveUntil(
+           MaterialPageRoute(builder: (_) => AutoRouterLogin()),
+               (route) => false,
+         );
+       }
 
       }
 
