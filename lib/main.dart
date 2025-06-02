@@ -50,6 +50,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   TextEditingController _wlSsidcontroller =  TextEditingController();
   TextEditingController _wlWpaPskcontroller =  TextEditingController();
   TextEditingController _onNTAuthenticationText =  TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -119,7 +120,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     }
 
   }
-  final _formKey = GlobalKey<FormState>();
 
   final Map<String, RouterStrategy> _routerStrategies = {
     'HUAWEI_New': HuaweiRouterNew(),

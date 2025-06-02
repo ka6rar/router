@@ -36,6 +36,7 @@ class DBHerper {
         username TEXT,
         password TEXT,
         ONT_Authaction TEXT,
+        vlan TEXT,
         type_router TEXT,
         number_user TEXT,
         name_user TEXT
@@ -78,10 +79,10 @@ class DBHerper {
         whereArgs:  [UserModel.id]);
   }
 
-  readData(String sql) async {
+Future<List<UserModel>> readData(String sql) async {
     Database? mydb = await database;
     List<Map> response = await mydb.rawQuery(sql);
-    return response;
+    return response.map((map) => UserModel.fromMap(map)).toList();
   }
 
 

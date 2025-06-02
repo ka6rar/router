@@ -8,6 +8,7 @@ class UserModel {
   final String? vlan;
   final String? phoneNumber;
   final String? nameUser;
+  final String? ONT_Authaction;
 
   UserModel(
       this.name_r,
@@ -18,6 +19,7 @@ class UserModel {
       this.vlan,
       this.phoneNumber,
       this.nameUser, // لا تنسَ الفاصلة هنا
+      this.ONT_Authaction, // لا تنسَ الفاصلة هنا
       [this.id] // أضفنا id كـ optional parameter
       );
 
@@ -28,8 +30,9 @@ class UserModel {
         userName = res['username'],
         password = res['password'],
         typeRouter = res['type_router'],
-        vlan = res['ONT_Authaction'],
+        vlan = res['vlan'],
         phoneNumber = res['number_user'],
+        ONT_Authaction = res['ONT_Authaction'],
         nameUser = res['name_user'];
 
   Map<String, Object?> toMap() {
@@ -39,8 +42,9 @@ class UserModel {
       'username': userName,
       'password': password,
       'type_router': typeRouter,
-      'ONT_Authaction': vlan,
+      'vlan': vlan,
       'number_user': phoneNumber,
+      'ONT_Authaction': ONT_Authaction,
       'name_user': nameUser
     };
   }
