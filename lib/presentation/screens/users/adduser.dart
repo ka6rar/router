@@ -245,7 +245,18 @@ class _AdduserState extends State<Adduser> {
 
                  ),
                ),
+               CheckboxListTile(
+                 checkColor: Colors.green,
+                 activeColor: Colors.green.shade100,
+                 title: const Text("ONT Authentication" , style: TextStyle(fontFamily: fontF),),
+                 value: onNTAuthentication_true_false,
+                 onChanged: (value) {
+                   setState(() {
+                     onNTAuthentication_true_false = value!;
+                   });
 
+                 },),
+               if(onNTAuthentication_true_false == true)
                  Padding(
                    padding: const EdgeInsets.only(right:16, left: 16, top: 5 ),
                    child: TextFormField(
@@ -282,12 +293,25 @@ class _AdduserState extends State<Adduser> {
                      print(selected_type_router);
                        if(selected_type_router == '') {
                          setState(() {
-                           stutsMsg =   "اختارانواع الراوتر";
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(
+                               content: Text( "اختارانواع الراوتر", style: TextStyle(fontFamily: fontF)),
+                               backgroundColor: Colors.black,
+                               duration: Duration(seconds: 4),
+                             ),
+                           );
+
                          });
                        } else
                        if(selectedVlan == null) {
                          setState(() {
-                           stutsMsg =   "اختار في لان";
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(
+                               content: Text("اختار في لان" , style: TextStyle(fontFamily: fontF),),
+                               backgroundColor: Colors.black,
+                               duration: Duration(seconds: 4),
+                             ),
+                           );
                          });
                        } else {
                          setState(() {

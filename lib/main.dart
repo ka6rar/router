@@ -66,7 +66,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   Future<void> copyInfoUser() async {
     await deepLink(
-      appLinks: _appLinks,
+      appLinks: AppLinks(),
       wlSsidController: _wlSsidcontroller,
       wlWpaPskController: _wlWpaPskcontroller,
       usernameController: _usernamecontroller,
@@ -90,6 +90,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
      },);
     // Also handle app start via a link
     copyInfoUser();
+
   }
 
 

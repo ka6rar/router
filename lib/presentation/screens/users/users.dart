@@ -175,19 +175,23 @@ class _UsersState extends State<Users> {
                     const SizedBox(height: 12),
 
                     /// زر واتساب
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.access_time, color: Colors.white),
-                        label: const Text("إرسال عبر واتساب"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
+                          label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: Colors.black , width: 0.2)
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
