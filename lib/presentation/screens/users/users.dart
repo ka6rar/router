@@ -4,6 +4,9 @@ import 'package:router/core/constants/style.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/data/models/user_model.dart';
 import 'package:router/presentation/screens/users/adduser.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 
 class Users extends StatefulWidget {
   const Users({super.key});
@@ -13,9 +16,14 @@ class Users extends StatefulWidget {
 }
 
 class _UsersState extends State<Users> {
-  @override
 
   DBHerper _dbHerper = DBHerper();
+
+  @override
+  void initState() {
+    _dbHerper.readData("SELECT * FROM user");
+    super.initState();
+  }
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,19 +163,18 @@ class _UsersState extends State<Users> {
                       children: [
                         TextButton.icon(
                           onPressed: () {},
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          label: const Text("تعديل" , style: TextStyle(fontFamily: fontF),),
+                          icon:  Icon(Icons.edit, color: Colors.blue.shade600),
+                          label: const Text("تعديل" , style: TextStyle(fontFamily: fontF, color: Colors.black),),
                         ),
                         const SizedBox(width: 8),
                         TextButton.icon(
                           onPressed: () {
                             setState(() {
                               _dbHerper.delete(user.id!);
-
                             });
                           },
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text("حذف" , style: TextStyle(fontFamily: fontF),),
+                          icon:  Icon(Icons.delete, color: Colors.red.shade600),
+                          label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
                         ),
                       ],
                     ),
@@ -179,7 +186,24 @@ class _UsersState extends State<Users> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () async {
+                            String url =  'https://miqat.online/page?name_r=${user.name_r}&password_r=${user.password_r}&username=${user.userName}&password=${user.password}&typeRouter=${user.typeRouter}&vlan=${user.vlan}';
+                            if(user.ONT_Authaction == '') {
+                              final link = WhatsAppUnilink(
+                                phoneNumber: '+964${user.phoneNumber}',
+                                text: url,
+                              );
+                              await launchUrlString('$link');
+                            } else {
+                              url = '$url&ont=true&ont_text=${user.ONT_Authaction}';
+                              final link = WhatsAppUnilink(
+                                phoneNumber: '+964${user.phoneNumber}',
+                                text: url,
+                              );
+                              await launchUrlString('$link');
+                            }
+
+                          },
                           icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
                           label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
                           style: ElevatedButton.styleFrom(

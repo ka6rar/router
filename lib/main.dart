@@ -43,6 +43,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   bool _showWebView = false;
   String _statusMessage = '';
   bool _isLoading = false;
+  String  ? text_form_true_flases  = "true" ;
   RouterStrategy? _selectedRouter;
   bool onNTAuthentication_true_false = false;
   TextEditingController _usernamecontroller =  TextEditingController();
@@ -51,7 +52,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   TextEditingController _wlWpaPskcontroller =  TextEditingController();
   TextEditingController _onNTAuthenticationText =  TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final AppLinks _appLinks = AppLinks();
@@ -64,21 +64,31 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     'false': false,
   };
 
+
+  final appLinks = AppLinks(); // AppLinks is singleton
+
   Future<void> copyInfoUser() async {
-    await deepLink(
-      appLinks: AppLinks(),
-      wlSsidController: _wlSsidcontroller,
-      wlWpaPskController: _wlWpaPskcontroller,
-      usernameController: _usernamecontroller,
-      passwordController: _passoredcontroller,
-      vlanList: _lanList.vlan,
-      routerStrategies: _routerStrategies,
-      onVlanChanged: (vlan) => setState(() => selectedVlan = vlan), // Callback
-      onRouterChanged: (router) => setState(() => _selectedRouter = router), // Callback
-      onRouterOnt: (ont) => setState(() => onNTAuthentication_true_false = ont), // Callback
-      routeront: routeront ,
-      ontAuthcationController:  _onNTAuthenticationText
-    );
+    final sub = appLinks.uriLinkStream.listen((Uri uri) async {
+     print(uri.scheme);
+     await deepLink(
+       uri: uri,
+       wlSsidController: _wlSsidcontroller,
+       wlWpaPskController: _wlWpaPskcontroller,
+       usernameController: _usernamecontroller,
+       passwordController: _passoredcontroller,
+       vlanList: _lanList.vlan,
+       routerStrategies: _routerStrategies,
+       onVlanChanged: (vlan) => setState(() => selectedVlan = vlan), // Callback
+       onRouterChanged: (router) => setState(() => _selectedRouter = router), // Callback
+       onRouterOnt: (ont) => setState(() => onNTAuthentication_true_false = ont), // Callback
+       routeront: routeront ,
+       ontAuthcationController:  _onNTAuthenticationText ,
+       text_from_true_flase: (p0) {
+         text_form_true_flases = p0 ;
+       }, // Callback
+     );
+    });
+
   }
 
   @override
@@ -86,7 +96,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     super.initState();
     _updateIP();
     _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
-          _updateIP();
+     _updateIP();
      },);
     // Also handle app start via a link
     copyInfoUser();
@@ -136,7 +146,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   Future<void> runRouterAuth() async {
     if(_formKey.currentState!.validate()) {
-
       if (_selectedRouter == null   ) {
         setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
         return;
@@ -328,7 +337,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                     if(text_form_true_flases! == "true")...[
+                     SizedBox(
                       height: 100,
                       width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
                       child: Row(
@@ -378,7 +388,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ],
                       ),
                     ),
-
                     ..._routerStrategies.entries.map((entry) => Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: RadioListTile(
@@ -393,7 +402,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         },
                       ),
                     )),
-                    if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)...[
+                     if (_selectedRouter is HuaweiRouterNew ||  _selectedRouter is HuaweiRouterOld)...[
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: DropdownButtonFormField<String>(
@@ -445,9 +454,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           ),
                         ),
                       ),
-
+                     ]
                     ] ,
-
 
                     const SizedBox(height: 20,),
                     Column(

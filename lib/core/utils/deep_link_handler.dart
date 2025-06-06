@@ -3,7 +3,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 
 Future<void> deepLink({
-  required AppLinks appLinks,
+  required Uri uri,
   required TextEditingController wlSsidController,
   required TextEditingController wlWpaPskController,
   required TextEditingController usernameController,
@@ -15,15 +15,9 @@ Future<void> deepLink({
   required Function(bool) onRouterOnt,
   required Map<String, bool> routeront,
   required TextEditingController ontAuthcationController,
+  required Function(String) text_from_true_flase,
+
 }) async {
-
-  // 🔍 أولاً نبحث عن الرابط من Firebase Dynamic Links
-  final PendingDynamicLinkData? initialDynamicLink =
-  await FirebaseDynamicLinks.instance.getInitialLink();
-  Uri? uri = initialDynamicLink?.link;
-
-  // إذا لم يوجد، نستخدم AppLinks
-  uri ??= await appLinks.getInitialLink();
 
   if (uri != null) {
     print('Received deep link: $uri');
@@ -60,9 +54,22 @@ Future<void> deepLink({
       onRouterOnt(routeront[ontParam]!);
     }
 
+
+
     if (uri.queryParameters['ont_text'] != null) {
       ontAuthcationController.text = uri.queryParameters['ont_text']!;
     }
+
+
+
+    if (uri.queryParameters['true_flase'] != null) {
+      ontAuthcationController.text = uri.queryParameters['ont_text']!;
+       text_from_true_flase(uri.queryParameters['true_flase']!);
+
+    }
+
+
+
   } else {
     print('No deep link found');
   }
