@@ -216,8 +216,12 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       if(_selectedRouter is HuaweiRouterNew)
       {
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
-      _controller, selectedVlan!,
-     _onNTAuthenticationText, 3, 5, 33, 34, 10, 5, 20 ,onNTAuthentication_true_false);
+         _controller, selectedVlan!,
+        _onNTAuthenticationText, 3, 5, 33, 34, 10, 5, 20 ,
+        onNTAuthentication_true_false);
+
+
+
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => AutoRouterLogin()),
@@ -228,7 +232,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       } else  {
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
             _controller, selectedVlan!,
-            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,10 ,  onNTAuthentication_true_false
+            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,10 ,
+             onNTAuthentication_true_false
+
         );
        if (mounted) {
          Navigator.of(context).pushAndRemoveUntil(
@@ -337,7 +343,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                         ],
                       ),
                     ),
-                     if(text_form_true_flases! == "true")...[
+                     // if(text_form_true_flases! == "true")...[
                      SizedBox(
                       height: 100,
                       width: double.infinity, // أو استخدم عرض مناسب أكبر من 100
@@ -454,7 +460,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                           ),
                         ),
                       ),
-                     ]
+                     // ]
                     ] ,
 
                     const SizedBox(height: 20,),
