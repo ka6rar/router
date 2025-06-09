@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'abstractt.dart';
@@ -857,6 +859,7 @@ class HuaweiRouterOld implements RouterStrategy {
   Future<void> reboot(WebViewController controller) async {
     await controller.clearLocalStorage();
     await controller.clearCache();
+    exit(0);
   }
 }
 
