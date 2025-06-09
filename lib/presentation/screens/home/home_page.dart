@@ -7,7 +7,9 @@ import 'package:router/presentation/screens/home/backup.dart';
 import 'package:router/presentation/screens/users/users.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+
+  const HomePage({super.key, this.initialIndex = 2});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -16,9 +18,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
 
+  late int currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
 
     return  BottomNavLayout(
       pages: [
@@ -47,11 +58,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       savePageState: false,
-      lazyLoadPages: false,
-      pageStack: ReorderToFrontPageStack(initialPage: 1),
+      lazyLoadPages: true,
+      pageStack: ReorderToFrontPageStack(initialPage: widget.initialIndex),
       extendBody: false,
       resizeToAvoidBottomInset: false,
-
 
     );
   }}

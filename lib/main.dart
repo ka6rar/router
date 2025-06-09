@@ -289,7 +289,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                     _controller.clearLocalStorage();
 
                   },
-                  child: const Text('نهاء'),
+                  child: const Text('نهاء العملية'),
                 ),
                statusMsg(),
                Expanded(

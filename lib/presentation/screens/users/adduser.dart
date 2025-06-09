@@ -6,6 +6,8 @@ import 'package:router/core/utils/v_lan_list.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/data/models/user_model.dart';
 import 'package:router/model_router.dart';
+import 'package:router/presentation/screens/home/home_page.dart';
+import 'package:router/presentation/screens/users/users.dart';
 
 import '../../../abstractt.dart';
 import '../../../core/constants/style.dart';
@@ -317,22 +319,23 @@ class _AdduserState extends State<Adduser> {
                          setState(() {
                            stutsMsg = '';
                          });
-                       }
 
-                     // if(_formKey.currentState!.validate()) {
-                       await  _dbHerper.insert(UserModel(
+                     if(_formKey.currentState!.validate()) {
+                       await _dbHerper.insert(UserModel(
                            _wlSsidcontroller.text,
                            _wlWpaPskcontroller.text,
                            _usernamecontroller.text,
                            _passoredcontroller.text,
-                            selected_type_router,
-                            selectedVlan ,
+                           selected_type_router,
+                           selectedVlan,
                            _numberusercontroller.text,
-                           _nameusercontroller.text ,
+                           _nameusercontroller.text,
                            _onNTAuthenticationText.text ?? ''
                        ));
+                        Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) => HomePage(initialIndex: 1),),(route) => false, );
 
-                     // }
+                       }
+                       }
                      } ,
                      child: const Text("حفظ" , style: TextStyle(color: Colors.green , fontWeight: FontWeight.bold , fontFamily: fontF),)
                  ),

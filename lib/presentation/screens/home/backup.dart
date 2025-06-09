@@ -124,8 +124,12 @@ class _BackupState extends State<Backup> {
                   _buildBackupButton(
                     icon: Icons.restore,
                     label: ' نسخة احتياطية',
-                    onPressed: () {
-                      // TODO: تنفيذ الاسترجاع
+                    onPressed: () async {
+                      //TODO: كرار جبر
+                      await  _dbHerper.exportDatabase();
+                      setState(() {
+                        messageStatus=   _dbHerper.messageStatus!  ;
+                      });
                     },
                   ),
                 ],
@@ -151,7 +155,7 @@ class _BackupState extends State<Backup> {
         style: TextStyle(
           fontFamily: fontF,
           color: Colors.green.shade800,
-          fontSize: 16,
+          fontSize: 13,
         ),
       ),
       style: ElevatedButton.styleFrom(
@@ -161,7 +165,7 @@ class _BackupState extends State<Backup> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        elevation: 4,
+        elevation: 0,
         shadowColor: Colors.green.shade100,
       ),
     );

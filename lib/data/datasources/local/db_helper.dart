@@ -105,6 +105,12 @@ class DBHerper {
     return res.isNotEmpty;
   }
 
+  Future<List<UserModel>> searchData(String sql) async {
+    Database? mydb = await database;
+    List<Map<String, dynamic>> response = await mydb.rawQuery(sql);
+    return response.map((map) => UserModel.fromMap(map)).toList();
+  }
+
 
   Future<void> exportDatabase() async {
     final databasesPath = await getApplicationDocumentsDirectory();
