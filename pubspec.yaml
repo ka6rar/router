@@ -47,15 +47,12 @@ dependencies:
   smart_nav_bar:
   icons_plus:
   logger: ^2.5.0
-<<<<<<< HEAD
   permission_handler:
   file_picker:
-=======
   share_plus: ^11.0.0
   whatsapp_unilink: ^2.1.0
   url_launcher:
 
->>>>>>> b1271161dfa6c7f27bd5b914a104ce487f8e663c
 
 dev_dependencies:
   flutter_test:
