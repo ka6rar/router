@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:router/abstractt.dart';
 import 'package:router/core/utils/deep_link_handler.dart';
 import 'package:router/core/utils/loggers.dart';
@@ -14,6 +15,7 @@ import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/model_router.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/presentation/screens/home/home_page.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -58,7 +60,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   String? selectedVlan;
 
   VLanList _lanList = VLanList();
-
+  DBHerper _dbHerper = DBHerper();
   final Map<String, bool> routeront = {
     'true': true,
     'false': false,
@@ -83,10 +85,11 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   @override
   void initState() {
+
     super.initState();
     _updateIP();
     _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
-          _updateIP();
+     _updateIP();
      },);
     // Also handle app start via a link
     copyInfoUser();
@@ -95,6 +98,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
 
   Future<void> _updateIP() async {
+
     final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
 
     final info = NetworkInfo();
@@ -135,6 +139,8 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   }
 
   Future<void> runRouterAuth() async {
+    _dbHerper.importDatabase();
+
     if(_formKey.currentState!.validate()) {
 
       if (_selectedRouter == null   ) {

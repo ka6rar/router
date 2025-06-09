@@ -47,7 +47,8 @@ dependencies:
   smart_nav_bar:
   icons_plus:
   logger: ^2.5.0
-
+  permission_handler:
+  file_picker:
 
 dev_dependencies:
   flutter_test:

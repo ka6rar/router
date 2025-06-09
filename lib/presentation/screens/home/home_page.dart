@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/main.dart';
+import 'package:router/presentation/screens/home/backup.dart';
 import 'package:router/presentation/screens/users/users.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _HomePageState extends State<HomePage> {
 
     return  BottomNavLayout(
       pages: [
+            (_) =>  const Backup(),
             (_) =>  const  Users(),
             (_) =>  const AutoRouterLogin(),
 
@@ -39,6 +41,7 @@ class _HomePageState extends State<HomePage> {
           onTap(index);
         },
         items:  const [
+          BottomNavigationBarItem( icon:  Icon(Bootstrap.server ,  size: 20), label: 'نسخ' , ),
           BottomNavigationBarItem( icon:  Icon(Bootstrap.person_add ,  size: 20), label: 'مستخدمين' , ),
           BottomNavigationBarItem( icon:  Icon(Bootstrap.hdd_network ,  size: 20), label: 'اتصال' , ),
         ],
