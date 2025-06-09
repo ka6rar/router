@@ -121,8 +121,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.4+2"
-<<<<<<< HEAD
-=======
   crypto:
     dependency: transitive
     description:
@@ -131,7 +129,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.6"
->>>>>>> b1271161dfa6c7f27bd5b914a104ce487f8e663c
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -164,16 +161,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
-<<<<<<< HEAD
-  file_picker:
-    dependency: "direct main"
-    description:
-      name: file_picker
-      sha256: "77f8e81d22d2a07d0dee2c62e1dda71dc1da73bf43bb2d45af09727406167964"
-      url: "https://pub.dev"
-    source: hosted
-    version: "10.1.9"
-=======
   file:
     dependency: transitive
     description:
@@ -182,7 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
->>>>>>> b1271161dfa6c7f27bd5b914a104ce487f8e663c
+  file_picker:
+    dependency: "direct main"
+    description:
+      name: file_picker
+      sha256: "77f8e81d22d2a07d0dee2c62e1dda71dc1da73bf43bb2d45af09727406167964"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.1.9"
   firebase_core:
     dependency: "direct main"
     description:
