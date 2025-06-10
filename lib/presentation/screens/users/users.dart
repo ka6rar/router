@@ -1,3 +1,4 @@
+import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:router/core/constants/style.dart';
@@ -223,9 +224,17 @@ class _UsersState extends State<Users> {
                             const SizedBox(width: 8),
                             TextButton.icon(
                               onPressed: () async {
+                                if (await confirm(context ,
+                                  content: Text("سيتم حذل لمستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                )) {
                                   _dbHerper.delete(user.id!);
                                   await getUsers();
+                                }
+                                return print('pressedCancel');
                               },
+
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
                               label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
                             ),
@@ -414,12 +423,20 @@ class _UsersState extends State<Users> {
                             const SizedBox(width: 8),
                             TextButton.icon(
                               onPressed: () async {
-                                await _dbHerper.delete(seacrched.id!);
-                                await getUsers(); // تحديث القائمة الرئيسية
-                                setState(() {
-                                  seacrch.removeWhere((user) => user.id == seacrched.id); // تحديث قائمة البحث
-                                });
+                                if (await confirm(context ,
+                                  content: Text("سيتم حذل لمستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                )) {
+                                  await _dbHerper.delete(seacrched.id!);
+                                  await getUsers(); // تحديث القائمة الرئيسية
+                                  setState(() {
+                                    seacrch.removeWhere((user) => user.id == seacrched.id); // تحديث قائمة البحث
+                                  });
+                                }
+                                return print('pressedCancel');
                               },
+
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
                               label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
                             ),
