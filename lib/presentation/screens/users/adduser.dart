@@ -332,6 +332,7 @@ class _AdduserState extends State<Adduser> {
                            _nameusercontroller.text,
                            _onNTAuthenticationText.text ?? ''
                        ));
+
                         Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) => HomePage(initialIndex: 1),),(route) => false, );
 
                        }

@@ -56,7 +56,7 @@ class _UsersState extends State<Users> {
                 onChanged: (value) async {
                   setState(() {
                     seacrch = users.where((user) => user.nameUser!.contains(value)).toList();
-                    print(seacrch);
+
                   });
 
                 },
@@ -87,7 +87,7 @@ class _UsersState extends State<Users> {
               ),
             ),
           ),
-          users.isEmpty  ?  Expanded(
+            users.isNotEmpty  && searchController.text.isEmpty ?  Expanded(
             child: users.isNotEmpty ? ListView.builder(
               itemCount: users.length,
               itemBuilder: (context, index) {
@@ -216,10 +216,9 @@ class _UsersState extends State<Users> {
                             ),
                             const SizedBox(width: 8),
                             TextButton.icon(
-                              onPressed: () {
-                                setState(() {
+                              onPressed: () async {
                                   _dbHerper.delete(user.id!);
-                                });
+                                  await getUsers();
                               },
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
                               label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
@@ -270,10 +269,10 @@ class _UsersState extends State<Users> {
                   ),
                 );
               },
-            ):  Center(child: CircularProgressIndicator(color: Colors.green.shade100,)),
+            ):  const Center(child:SizedBox()),
           ) :
           Expanded(
-            child: seacrch.isNotEmpty ? ListView.builder(
+            child: seacrch.isNotEmpty  || searchController.text.isEmpty ?  ListView.builder(
               itemCount: seacrch.length,
               itemBuilder: (context, index) {
                 UserModel  seacrched =  seacrch[index];
@@ -401,9 +400,11 @@ class _UsersState extends State<Users> {
                             ),
                             const SizedBox(width: 8),
                             TextButton.icon(
-                              onPressed: () {
+                              onPressed: () async {
+                                await _dbHerper.delete(seacrched.id!);
+                                await getUsers(); // تحديث القائمة الرئيسية
                                 setState(() {
-                                  _dbHerper.delete(seacrched.id!);
+                                  seacrch.removeWhere((user) => user.id == seacrched.id); // تحديث قائمة البحث
                                 });
                               },
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
@@ -455,7 +456,7 @@ class _UsersState extends State<Users> {
                   ),
                 );
               },
-            ):  Center(child:Text("لا توجد نتائج بحث مطابقة", style: TextStyle(fontFamily: fontF),)),
+            ):  const Center(child:Text("لا توجد نتائج بحث مطابقة", style: TextStyle(fontFamily: fontF),)),
           ) ,
         ],
       ),
