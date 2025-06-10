@@ -3,6 +3,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/data/models/user_model.dart';
+import 'package:router/presentation/screens/users/addUpdate.dart';
 import 'package:router/presentation/screens/users/adduser.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -56,7 +57,6 @@ class _UsersState extends State<Users> {
                 onChanged: (value) async {
                   setState(() {
                     seacrch = users.where((user) => user.nameUser!.contains(value)).toList();
-
                   });
 
                 },
@@ -198,7 +198,6 @@ class _UsersState extends State<Users> {
                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                              children: [
                                Checkbox(value: true, onChanged: (val) {
-
                                }),
                                const Text("ONT Attached" , style: TextStyle(fontFamily: fontF),),
                              ],
@@ -210,7 +209,14 @@ class _UsersState extends State<Users> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton.icon(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditUserScreen(user: user),
+                                  ),
+                                );
+                              },
                               icon:  Icon(Icons.edit, color: Colors.blue.shade600),
                               label: const Text("تعديل" , style: TextStyle(fontFamily: fontF, color: Colors.black),),
                             ),
@@ -394,7 +400,14 @@ class _UsersState extends State<Users> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton.icon(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditUserScreen(user: seacrched),
+                                  ),
+                                );
+                              },
                               icon:  Icon(Icons.edit, color: Colors.blue.shade600),
                               label: const Text("تعديل" , style: TextStyle(fontFamily: fontF, color: Colors.black),),
                             ),
