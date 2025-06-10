@@ -1,3 +1,4 @@
+import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
@@ -123,13 +124,27 @@ class _BackupState extends State<Backup> {
                   const SizedBox(height: 30),
                   _buildBackupButton(
                     icon: Icons.restore,
-                    label: ' نسخة احتياطية',
+                    label: 'نسخة احتياطية',
                     onPressed: () async {
-                      //TODO: كرار جبر
-                      await  _dbHerper.exportDatabase();
-                      setState(() {
-                        messageStatus=   _dbHerper.messageStatus!  ;
-                      });
+                      if (await confirm(
+                        context,
+                        title: const Text('تحذير هام', style: TextStyle(fontFamily: fontF, fontWeight: FontWeight.bold)),
+                        content: const Text(
+                          "سيتم إنشاء نسخة احتياطية من البيانات الحالية. إذا كان لديك نسخة احتياطية سابقة بنفس الاسم، سيتم استبدالها. يرجى التأكد من أنك لا تريد الاحتفاظ بالنسخة القديمة قبل المتابعة.",
+                          style: TextStyle(fontFamily: fontF, color: Colors.black),
+                        ),
+                        textCancel: const Text("إلغاء", style: TextStyle(fontFamily: fontF, color: Colors.black)),
+                        textOK: const Text("متابعة", style: TextStyle(fontFamily: fontF, color: Colors.red, fontWeight: FontWeight.bold)),
+
+                      )) {
+                        final result = await _dbHerper.exportDatabase();
+                        setState(() {
+                          messageStatus = _dbHerper.messageStatus!;
+                        });
+
+                      } else {
+                        print('تم إلغاء العملية');
+                      }
                     },
                   ),
                 ],

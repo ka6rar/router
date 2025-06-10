@@ -225,7 +225,7 @@ class _UsersState extends State<Users> {
                             TextButton.icon(
                               onPressed: () async {
                                 if (await confirm(context ,
-                                  content: Text("سيتم حذل لمستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  content: Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
                                   textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                   textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                 )) {
@@ -424,7 +424,7 @@ class _UsersState extends State<Users> {
                             TextButton.icon(
                               onPressed: () async {
                                 if (await confirm(context ,
-                                  content: Text("سيتم حذل لمستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  content: Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
                                   textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                   textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                 )) {

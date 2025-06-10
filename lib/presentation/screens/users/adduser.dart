@@ -334,7 +334,17 @@ class _AdduserState extends State<Adduser> {
                        ));
 
                         Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) => HomePage(initialIndex: 1),),(route) => false, );
-
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         const SnackBar(
+                           duration: Duration(hours: 1),
+                         animation: AlwaysStoppedAnimation(BorderSide.strokeAlignInside),
+                           content: Text(
+                             "تم إنشاء النسخة الاحتياطية بنجاح",
+                             style: TextStyle(fontFamily: fontF),
+                           ),
+                           backgroundColor: Colors.black,
+                         ),
+                       );
                        }
                        }
                      } ,
