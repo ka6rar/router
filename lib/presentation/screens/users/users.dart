@@ -4,9 +4,9 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/data/models/user_model.dart';
+import 'package:router/presentation/screens/home/home_page.dart';
 import 'package:router/presentation/screens/users/addUpdate.dart';
 import 'package:router/presentation/screens/users/adduser.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 
@@ -21,7 +21,7 @@ class _UsersState extends State<Users> {
   final DBHerper _dbHerper = DBHerper();
   final  TextEditingController searchController = TextEditingController();
   List  seacrch = [];
-  List  users = [];
+  List  users   = [];
 
  Future<void> getUsers() async {
  List user = await _dbHerper.readData("SELECT * FROM user");
@@ -225,9 +225,9 @@ class _UsersState extends State<Users> {
                             TextButton.icon(
                               onPressed: () async {
                                 if (await confirm(context ,
-                                  content: Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
-                                  textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
-                                  textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  content: const Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  textCancel:  const Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  textOK:  const Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                 )) {
                                   _dbHerper.delete(user.id!);
                                   await getUsers();
@@ -238,47 +238,61 @@ class _UsersState extends State<Users> {
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
                               label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
                             ),
+                            const SizedBox(width: 8),
+                            TextButton.icon(
+                              onPressed: () async {
+                                String url =  'router://open/page?name_r=${user.name_r}&password_r=${user.password_r}&username=${user.userName}&password=${user.password}&typeRouter=${user.typeRouter}&vlan=${user.vlan}';
+                                if(user.ONT_Authaction == '') {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage(url: url , initialIndex: 2,),));
+                                } else {
+                                  url = '$url&ont=true&ont_text=${user.ONT_Authaction}';
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage(url: url , initialIndex: 2,),));
+                                }
+                              },
+                              icon:  const Icon(Icons.ad_units, color: Colors.green),
+                              label: const Text("تجهيز " , style: TextStyle(fontFamily: fontF , color: Colors.black),),
+                            ),
                           ],
                         ),
 
                         const SizedBox(height: 12),
 
                         /// زر واتساب
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                String url =  'https://miqat.online/page?name_r=${user.name_r}&password_r=${user.password_r}&username=${user.userName}&password=${user.password}&typeRouter=${user.typeRouter}&vlan=${user.vlan}';
-                                if(user.ONT_Authaction == '') {
-                                  final link = WhatsAppUnilink(
-                                    phoneNumber: '+964${user.phoneNumber}',
-                                    text: url,
-                                  );
-                                  await launchUrlString('$link');
-                                } else {
-                                  url = '$url&ont=true&ont_text=${user.ONT_Authaction}';
-                                  final link = WhatsAppUnilink(
-                                    phoneNumber: '+964${user.phoneNumber}',
-                                    text: url,
-                                  );
-                                  await launchUrlString('$link');
-                                }
-
-                              },
-                              icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
-                              label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: const BorderSide(color: Colors.black , width: 0.2)
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.end,
+                        //   children: [
+                        //     ElevatedButton.icon(
+                        //       onPressed: () async {
+                        //         String url =  'https://miqat.online/page?name_r=${user.name_r}&password_r=${user.password_r}&username=${user.userName}&password=${user.password}&typeRouter=${user.typeRouter}&vlan=${user.vlan}';
+                        //         if(user.ONT_Authaction == '') {
+                        //           final link = WhatsAppUnilink(
+                        //             phoneNumber: '+964${user.phoneNumber}',
+                        //             text: url,
+                        //           );
+                        //           await launchUrlString('$link');
+                        //         } else {
+                        //           url = '$url&ont=true&ont_text=${user.ONT_Authaction}';
+                        //           final link = WhatsAppUnilink(
+                        //             phoneNumber: '+964${user.phoneNumber}',
+                        //             text: url,
+                        //           );
+                        //           await launchUrlString('$link');
+                        //         }
+                        //
+                        //       },
+                        //       icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
+                        //       label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
+                        //       style: ElevatedButton.styleFrom(
+                        //         backgroundColor: Colors.white,
+                        //         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        //         shape: RoundedRectangleBorder(
+                        //           borderRadius: BorderRadius.circular(12),
+                        //           side: const BorderSide(color: Colors.black , width: 0.2)
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),
@@ -404,7 +418,7 @@ class _UsersState extends State<Users> {
                           )
                         ] ,
                         const Divider(),
-                        /// أزرار تعديل وحذف
+                        /// أزرار تعديل وحذف و تجهيز الطلب
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -424,9 +438,9 @@ class _UsersState extends State<Users> {
                             TextButton.icon(
                               onPressed: () async {
                                 if (await confirm(context ,
-                                  content: Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
-                                  textCancel:  Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
-                                  textOK:  Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  content: const Text("سيتم حذف المستخدم" , style: TextStyle(fontFamily: fontF, color: Colors.black),) ,
+                                  textCancel:  const Text("لا", style: TextStyle(fontFamily: fontF, color: Colors.black),),
+                                  textOK:  const Text("نعم", style: TextStyle(fontFamily: fontF, color: Colors.black),),
                                 )) {
                                   await _dbHerper.delete(seacrched.id!);
                                   await getUsers(); // تحديث القائمة الرئيسية
@@ -436,51 +450,65 @@ class _UsersState extends State<Users> {
                                 }
                                 return print('pressedCancel');
                               },
-
                               icon:  Icon(Icons.delete, color: Colors.red.shade600),
                               label: const Text("حذف" , style: TextStyle(fontFamily: fontF , color: Colors.black),),
                             ),
+                            const SizedBox(width: 8),
+                            TextButton.icon(
+                              onPressed: () async {
+                                String url =  'router://open/page?name_r=${seacrched.name_r}&password_r=${seacrched.password_r}&username=${seacrched.userName}&password=${seacrched.password}&typeRouter=${seacrched.typeRouter}&vlan=${seacrched.vlan}';
+                                if(seacrched.ONT_Authaction == '') {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage(url: url , initialIndex: 2,),));
+                                } else {
+                                  url = '$url&ont=true&ont_text=${seacrched.ONT_Authaction}';
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage(url: url , initialIndex: 2,),));
+                                }
+                              },
+                              icon:  const Icon(Icons.ad_units, color: Colors.green),
+                              label: const Text("تجهيز " , style: TextStyle(fontFamily: fontF , color: Colors.black),),
+                            ),
+
                           ],
                         ),
 
                         const SizedBox(height: 12),
 
                         /// زر واتساب
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                String url =  'https://miqat.online/page?name_r=${seacrched.name_r}&password_r=${seacrched.password_r}&username=${seacrched.userName}&password=${seacrched.password}&typeRouter=${seacrched.typeRouter}&vlan=${seacrched.vlan}';
-                                if(seacrched.ONT_Authaction == '') {
-                                  final link = WhatsAppUnilink(
-                                    phoneNumber: '+964${seacrched.phoneNumber}',
-                                    text: url,
-                                  );
-                                  await launchUrlString('$link');
-                                } else {
-                                  url = '$url&ont=true&ont_text=${seacrched.ONT_Authaction}';
-                                  final link = WhatsAppUnilink(
-                                    phoneNumber: '+964${seacrched.phoneNumber}',
-                                    text: url,
-                                  );
-                                  await launchUrlString('$link');
-                                }
-
-                              },
-                              icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
-                              label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: const BorderSide(color: Colors.black , width: 0.2)
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.end,
+                        //   children: [
+                        //     ElevatedButton.icon(
+                        //       onPressed: () async {
+                        //         String url =  'https://miqat.online/page?name_r=${seacrched.name_r}&password_r=${seacrched.password_r}&username=${seacrched.userName}&password=${seacrched.password}&typeRouter=${seacrched.typeRouter}&vlan=${seacrched.vlan}';
+                        //         if(seacrched.ONT_Authaction == '') {
+                        //           final link = WhatsAppUnilink(
+                        //             phoneNumber: '+964${seacrched.phoneNumber}',
+                        //             text: url,
+                        //           );
+                        //           await launchUrlString('$link');
+                        //         } else {
+                        //           url = '$url&ont=true&ont_text=${seacrched.ONT_Authaction}';
+                        //           final link = WhatsAppUnilink(
+                        //             phoneNumber: '+964${seacrched.phoneNumber}',
+                        //             text: url,
+                        //           );
+                        //           await launchUrlString('$link');
+                        //         }
+                        //
+                        //       },
+                        //       icon: const Icon(Bootstrap.whatsapp, color: Colors.green),
+                        //       label: const Text("إرسال عبر واتساب" , style: TextStyle(color: Colors.black , fontFamily: fontF),),
+                        //       style: ElevatedButton.styleFrom(
+                        //         backgroundColor: Colors.white,
+                        //         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        //         shape: RoundedRectangleBorder(
+                        //             borderRadius: BorderRadius.circular(12),
+                        //             side: const BorderSide(color: Colors.black , width: 0.2)
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),

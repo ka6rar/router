@@ -12,7 +12,7 @@ import 'package:router/core/utils/messages.dart';
 import 'package:router/core/utils/speed_step_router.dart';
 import 'package:router/core/utils/v_lan_list.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
-import 'package:router/model_router.dart';
+import 'package:router/router.dart';
 import 'package:router/core/constants/style.dart';
 import 'package:router/presentation/screens/home/home_page.dart';
 import 'package:sqflite/sqflite.dart';
@@ -23,14 +23,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DBHerper.database;
   await Firebase.initializeApp();
-  runApp(const MaterialApp(
+  runApp( MaterialApp(
     home: HomePage(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
 class AutoRouterLogin extends StatefulWidget {
-  const AutoRouterLogin({Key? key}) : super(key: key);
+   String ? url;
+   AutoRouterLogin({  this.url});
 
   @override
   _AutoRouterLoginState createState() => _AutoRouterLoginState();
@@ -70,10 +71,9 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   final appLinks = AppLinks(); // AppLinks is singleton
 
   Future<void> copyInfoUser() async {
-    final sub = appLinks.uriLinkStream.listen((Uri uri) async {
-     print(uri.scheme);
+    // final sub = appLinks.uriLinkStream.listen((Uri uri) async {
      await deepLink(
-       uri: uri,
+       uri: Uri.parse(widget.url!),
        wlSsidController: _wlSsidcontroller,
        wlWpaPskController: _wlWpaPskcontroller,
        usernameController: _usernamecontroller,
@@ -89,7 +89,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
          text_form_true_flases = p0 ;
        }, // Callback
      );
-    });
+    // });
 
   }
 
@@ -99,10 +99,14 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
     super.initState();
     _updateIP();
     _connectivitySubscription =  _connectivity.onConnectivityChanged.listen((event) {
-     _updateIP();
+      _updateIP();
      },);
     // Also handle app start via a link
-    copyInfoUser();
+    if(widget.url != null) {
+      copyInfoUser();
+
+    }
+    print(widget.url);
 
   }
 
@@ -182,7 +186,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                  if( message.message == "portId") {
                    Future.delayed(const Duration(seconds: 1), () {
                      Navigator.of(context).pushAndRemoveUntil(
-                       MaterialPageRoute(builder: (context) => const AutoRouterLogin()), // استبدل HomePage بالصفحة الرئيسية الحقيقية
+                       MaterialPageRoute(builder: (context) =>  AutoRouterLogin()), // استبدل HomePage بالصفحة الرئيسية الحقيقية
                            (route) => false, // هذا يحذف كل الصفحات السابقة
                      );
                    });
@@ -221,6 +225,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
       if(_selectedRouter is HuaweiRouterNew)
       {
+        //
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
          _controller, selectedVlan!,
         _onNTAuthenticationText, 3, 5, 33, 34, 10, 5, 20 ,
@@ -238,7 +243,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
       } else  {
         await  speedStepRouter(_selectedRouter!, _usernamecontroller, _passoredcontroller, _wlSsidcontroller, _wlWpaPskcontroller,
             _controller, selectedVlan!,
-            _onNTAuthenticationText, 3, 5, 15, 20, 2, 1 ,10 ,
+            _onNTAuthenticationText, 3, 5, 15, 20, 5, 5 ,10 ,
              onNTAuthentication_true_false
 
         );
@@ -270,6 +275,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(title: const Text('إدارة الراوتر')),
       body: Form(
@@ -283,7 +289,7 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
                   onTap: () async {
                     Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const AutoRouterLogin())
+                        MaterialPageRoute(builder: (_) =>  AutoRouterLogin())
                     );
                     _controller.clearCache();
                     _controller.clearLocalStorage();

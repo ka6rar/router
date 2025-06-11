@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:router/core/utils/v_lan_list.dart';
 import 'package:router/data/datasources/local/db_helper.dart';
 import 'package:router/data/models/user_model.dart';
-import 'package:router/model_router.dart';
+import 'package:router/router.dart';
 import 'package:router/presentation/screens/home/home_page.dart';
 import 'package:router/presentation/screens/users/users.dart';
 
@@ -335,16 +335,32 @@ class _AdduserState extends State<Adduser> {
 
                         Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) => HomePage(initialIndex: 1),),(route) => false, );
                        ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(
-                           duration: Duration(hours: 1),
-                         animation: AlwaysStoppedAnimation(BorderSide.strokeAlignInside),
-                           content: Text(
-                             "تم إنشاء النسخة الاحتياطية بنجاح",
-                             style: TextStyle(fontFamily: fontF),
+                         SnackBar(
+                           duration: const Duration(seconds: 3), // المدة قصيرة لجعلها ناعمة
+                           behavior: SnackBarBehavior.floating,
+                           backgroundColor: Colors.black.withOpacity(0.85),
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.circular(15),
                            ),
-                           backgroundColor: Colors.black,
+                           content: Row(
+                             children: [
+                               const Icon(Icons.check_circle, color: Colors.greenAccent),
+                               const SizedBox(width: 10),
+                               Expanded(
+                                 child: Text(
+                                   "تم اضافة  المستخدم بنجاح",
+                                   style: TextStyle(
+                                     fontFamily: fontF,
+                                     color: Colors.white,
+                                     fontSize: 16,
+                                   ),
+                                 ),
+                               ),
+                             ],
+                           ),
                          ),
                        );
+
                        }
                        }
                      } ,

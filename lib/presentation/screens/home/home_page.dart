@@ -8,8 +8,8 @@ import 'package:router/presentation/screens/users/users.dart';
 
 class HomePage extends StatefulWidget {
   final int initialIndex;
-
-  const HomePage({super.key, this.initialIndex = 2});
+ String ? url;
+   HomePage({super.key, this.initialIndex = 2 , this.url});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -30,12 +30,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
 
 
-
     return  BottomNavLayout(
       pages: [
             (_) =>  const Backup(),
             (_) =>  const  Users(),
-            (_) =>  const AutoRouterLogin(),
+            (_) =>   AutoRouterLogin(url: widget.url,),
 
       ],
       bottomNavigationBar: (currentIndex, onTap) => BottomNavigationBar(
@@ -58,7 +57,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       savePageState: false,
-      lazyLoadPages: true,
+      lazyLoadPages: false,
       pageStack: ReorderToFrontPageStack(initialPage: widget.initialIndex),
       extendBody: false,
       resizeToAvoidBottomInset: false,

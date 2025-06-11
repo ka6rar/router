@@ -387,8 +387,32 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
                         final dbHelper = DBHerper();
                         await dbHelper.updtaeQuantity(updatedUser);
+                        SnackBar(
+                          duration: const Duration(seconds: 3), // المدة قصيرة لجعلها ناعمة
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.black.withOpacity(0.85),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          content: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.greenAccent),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  "تم التحديث المستخدم بنجاح",
+                                  style: TextStyle(
+                                    fontFamily: fontF,
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
 
-                        Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) => HomePage(initialIndex: 1),),(route) => false, );
+                        Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (_) =>  HomePage(initialIndex: 1),),(route) => false, );
                       }
                     },
                     child: const Text("حفظ", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontFamily: fontF)),
