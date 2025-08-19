@@ -22,7 +22,7 @@ import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DBHerper.database;
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
   runApp( MaterialApp(
     home: HomePage(),
     debugShowCheckedModeBanner: false,
@@ -153,8 +153,6 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
   }
 
   Future<void> runRouterAuth() async {
-    _dbHerper.importDatabase();
-
     if(_formKey.currentState!.validate()) {
       if (_selectedRouter == null   ) {
         setState(() => _statusMessage = 'الرجاء اختيار نوع الراوتر');
