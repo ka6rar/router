@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:router/core/utils/loggers.dart';
 import 'package:router/data/models/user_model.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io' as io;
 import 'package:path/path.dart';
@@ -116,31 +117,25 @@ class DBHerper {
     final databasesPath = await getApplicationDocumentsDirectory();
     final dbFile = File(join(databasesPath.path, 'user.db'));
 
-    // تأكد من وجود الملف
     if (!await dbFile.exists()) {
-      messageStatus =  "❌ قاعدة البيانات غير موجودة";
+      print("❌ قاعدة البيانات غير موجودة");
       return;
     }
 
+    if (Platform.isAndroid) {
+      // حفظ مباشر في Download
+      await Share.shareXFiles([XFile(dbFile.path)],
+          text: '📂 قاعدة البيانات الخاصة بك');
 
-    if (await Permission.manageExternalStorage.isGranted) {
-      messageStatus  = "✅ تم منح الإذن";
-    } else {
-      final result = await Permission.manageExternalStorage.request();
-      if (result.isGranted) {
-        messageStatus  ="✅ الإذن تم منحه بعد الطلب";
-
-      } else {
-        messageStatus  ="❌ تم رفض الإذن";
-        openAppSettings(); // فتح إعدادات التطبيق للسماح يدويًا
-      }
+          // final directory = Directory('/storage/emulated/0/Download');
+      // final exportFile = File('${directory.path}/user.db');
+      // await exportFile.writeAsBytes(await dbFile.readAsBytes());
+      // print("✅ تم تصدير القاعدة إلى: ${exportFile.path}");
+    } else if (Platform.isIOS) {
+      // مشاركة الملف مع المستخدم
+      await Share.shareXFiles([XFile(dbFile.path)],
+          text: '📂 قاعدة البيانات الخاصة بك');
     }
-
-
-    final directory = Directory('/storage/emulated/0/Download'); // لأندرويد فقط
-    final exportFile = File('${directory.path}/user.db');
-    await exportFile.writeAsBytes(await dbFile.readAsBytes());
-    print("✅ تم تصدير القاعدة إلى: ${exportFile.path}");
   }
 
   Future<void> importDatabase() async {
