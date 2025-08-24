@@ -278,19 +278,19 @@ class _AutoRouterLoginState extends State<AutoRouterLogin> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              if (!_statusMessage.startsWith("192.168."))
-                GestureDetector(
-                  onTap: () async {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) =>  AutoRouterLogin())
-                    );
-                    _controller.clearCache();
-                    _controller.clearLocalStorage();
-
-                  },
-                  child: const Text('نهاء العملية'),
-                ),
+              // if (!_statusMessage.startsWith("192.168."))
+              //   GestureDetector(
+              //     onTap: () async {
+              //       Navigator.push(
+              //           context,
+              //           MaterialPageRoute(builder: (_) =>  AutoRouterLogin())
+              //       );
+              //       _controller.clearCache();
+              //       _controller.clearLocalStorage();
+              //
+              //     },
+              //     child: const Text('نهاء العملية'),
+              //   ),
                statusMsg(),
                Expanded(
                 child: _showWebView
